@@ -1,0 +1,14 @@
+﻿  GameManager.cpp
+c:\git\battleshiptournament\battleshiptournament\battleshiptournament\gamemanager.cpp(112): error C2660: 'IBattleshipGameAlgo::setBoard': function does not take 4 arguments
+c:\git\battleshiptournament\battleshiptournament\battleshiptournament\gamemanager.cpp(113): error C2039: 'init': is not a member of 'IBattleshipGameAlgo'
+  c:\git\battleshiptournament\battleshiptournament\battleshiptournament\ibattleshipgamealgo.h(44): note: see declaration of 'IBattleshipGameAlgo'
+c:\git\battleshiptournament\battleshiptournament\battleshiptournament\gamemanager.cpp(388): error C2660: 'IBattleshipGameAlgo::notifyOnAttackResult': function does not take 4 arguments
+c:\git\battleshiptournament\battleshiptournament\battleshiptournament\gamemanager.cpp(390): error C2660: 'IBattleshipGameAlgo::notifyOnAttackResult': function does not take 4 arguments
+c:\git\battleshiptournament\battleshiptournament\battleshiptournament\gamemanager.cpp(395): error C2660: 'IBattleshipGameAlgo::notifyOnAttackResult': function does not take 4 arguments
+c:\git\battleshiptournament\battleshiptournament\battleshiptournament\gamemanager.cpp(397): error C2660: 'IBattleshipGameAlgo::notifyOnAttackResult': function does not take 4 arguments
+  Generating Code...
+  Compiling...
+  BattleshipGame.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  Utils.cpp
