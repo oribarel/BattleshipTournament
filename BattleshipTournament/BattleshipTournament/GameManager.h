@@ -20,7 +20,7 @@ public:
 	//-- ctors and dtors
 	GameManager();
 	GameManager(GameManager & other);
-	GameManager & operator=(GameManager & other);
+	GameManager& GameManager::operator=(GameManager& other) const;
 	~GameManager();
 
 	//-- getters

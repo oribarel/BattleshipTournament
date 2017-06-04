@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iso646.h>
 #include "Utils.h"
-
+#include <regex>
 
 using namespace std;
 
@@ -76,38 +76,76 @@ Board::Board(int rows, int columns, int depth) : BoardData(), data_(new char[row
 }*/
 
 
+void Board::readDimensionsFromFile(bool& is_valid, std::string line)
+{
+	if (std::regex_match(line, std::regex("[0-9]+[x][0-9]+[x][0-9](\\s*)")))
+	{
+		stringstream stream(line);
+		int num;
+		char ch;
+		vector<int> ints;
+		while (stream >> num)
+		{
+			if (stream >> ch)
+				ints.push_back(num);
+			else
+				ints.push_back(num);
+		}
+		_cols = ints[0];
+		_rows = ints[1];
+		_depth = ints[2];
+	}
+	else				
+		is_valid = false;
+}
+
 bool Board::SetBoardFromFile(const char* path)
 {
+	bool is_valid = true;
 	std::ifstream infile(path);
-	std::string line;
-	
-	int row = 0;
+	std::string line;	
+	int row = 1, column = 1, depth = 1;
 	if (infile.is_open())
 	{
-		while (safeGetline(infile, line) && row < _rows)
+		// read dimenstions
+		if (safeGetline(infile, line))
 		{
-			std::stringstream ss(line);
-			int column = 0;
-			while (column < static_cast<int>(line.size()) && column < _cols)
+			readDimensionsFromFile(is_valid, line);
+		}		
+		//read 2-D boards
+		while (is_valid and safeGetline(infile, line) && depth <= _depth)
+		{
+			if (!line.empty())
 			{
-				if (isLegalBoardElement(ss.peek()))
+				while (is_valid and safeGetline(infile, line) and row <= _rows)
 				{
-					data_[_cols*row + column] = ss.peek();
-					ss.ignore();
+					std::stringstream ss(line);
+					while (column < static_cast<int>(line.size()) and column <= _cols)
+					{
+						if (isLegalBoardElement(ss.peek()))
+						{
+							data_[coordToDataIndex(row, column,depth)] = ss.peek();
+							ss.ignore();
+						}
+						else
+							ss.ignore();
+						column++;
+					}
+					row++;
 				}
-				else
-					ss.ignore();
-				column++;
+				depth++;
 			}
-			row++;
+			else
+			{
+				is_valid = false;
+				break;
+			}
 		}
 		infile.close();
-		return true;
+		return is_valid;
 	}
-
 	DEBUG("SetBoardFromFile: Unable to open file");
 	return false;
-
 }
 
 //dtor
@@ -193,6 +231,11 @@ int Board::coordToDataIndex(Coordinate c) const
 	int col = c.col - 1;
 	int depth = c.depth - 1;
 	return row*_cols*_depth + col*_depth + depth;
+}
+
+int Board::coordToDataIndex(int row, int col, int depth) const
+{
+	return coordToDataIndex(Coordinate(row, col, depth));
 }
 
 bool Board::isAShip(char marineObject)

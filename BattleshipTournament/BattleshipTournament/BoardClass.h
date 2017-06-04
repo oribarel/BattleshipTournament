@@ -36,6 +36,7 @@ public:
 	
 	//empty constructor
 	Board::Board(int rows, int columns, int depth);//non-default
+	void readDimensionsFromFile(bool& is_valid, std::string line);
 	//Board::Board(const char** board, int rows, int columns, int depth); //non-default2
 	Board(const Board&); //copy ctor
 	Board& operator=(const Board&);
@@ -63,6 +64,7 @@ public:
 	//pair<int, int> Board::getNextCoord(int row, int col) const;
 
 	int Board::coordToDataIndex(Coordinate c) const;
+	int Board::coordToDataIndex(int row, int col, int depth) const;
 
 private:
 	char *data_;

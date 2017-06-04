@@ -12,7 +12,7 @@ GameManager::GameManager(GameManager& other)
 	DEBUG("Oh no! copy ctor of GameManager was called!");
 }
 
-GameManager& GameManager::operator=(GameManager& other)
+GameManager& GameManager::operator=(GameManager& other) const
 {
 	DEBUG("Oh no, operator= of GameManager was used!");
 	return other;
