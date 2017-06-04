@@ -36,32 +36,33 @@ public:
 	
 	//empty constructor
 	Board::Board(int rows, int columns, int depth);//non-default
-	Board::Board(const char** board, int rows, int columns, int depth); //non-default2
+	//Board::Board(const char** board, int rows, int columns, int depth); //non-default2
 	Board(const Board&); //copy ctor
 	Board& operator=(const Board&);
-	char operator()(int, int) const;
-	friend std::ostream& operator<<(std::ostream &strm, const Board &brd);
+	//char operator()(int, int) const;
+	//friend std::ostream& operator<<(std::ostream &strm, const Board &brd);
 	~Board();
-
-	void Board::revealSurroundings(int row, int col, char ship_char, Board &board, vector<pair<int, int>> &coords) const;
+	static void Board::revealSurroundings(int row, int col, int depth, char ship_char, Board &board, vector<Coordinate> &coords);
+	static void Board::revealSurroundings(Coordinate c, char ship_char, Board &board, vector<Coordinate> &coords);
 	void Board::findShips(int player_id, vector<Ship>& ships) const;
 
-	bool Board::isInBoard(int row, int col) const;
-    bool Board::isInBoard(pair<int,int> crd) const;
+	bool Board::isInBoard(Coordinate c) const;
+	bool Board::isInBoard(int row, int col, int depth) const;
 
 	static bool isLegalBoardElement(char c);
 	static bool Board::isUserShip(int user_id, char marineObject);
 	static bool isAShip(char marineObject);
 	static bool isBShip(char marineObject);
 
-	void setSlot(int row, int col, char marineObject);
+	void Board::setSlot(Coordinate c, char marineObject);
 	bool SetBoardFromFile(const char* path);
 
-	int getNumOfRows() const;
-	int getNumOfCols() const;
 	const char* Board::getData() const;
 
-	pair<int, int> Board::getNextCoord(int row, int col) const;
+
+	//pair<int, int> Board::getNextCoord(int row, int col) const;
+
+	int Board::coordToDataIndex(Coordinate c) const;
 
 private:
 	char *data_;

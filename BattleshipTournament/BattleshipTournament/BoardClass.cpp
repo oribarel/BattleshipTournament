@@ -41,35 +41,39 @@ std::istream& safeGetline(std::istream& is, std::string& t)
 	}
 }
 
+/*In the game, indexing starts at 1*/
 char Board::charAt(Coordinate c) const
 {
-	return '\0';
+	if (isInBoard(c))
+		return data_[coordToDataIndex(c)];
+	throw std::out_of_range("Trying to access invalid index in the board.");
 }
 
 //non-default ctor
-Board::Board(int rows, int columns, int depth) : BoardData(), data_(new char[rows * columns])
+Board::Board(int rows, int columns, int depth) : BoardData(), data_(new char[rows * columns * depth])
 {
 	 _rows = rows;
 	 _cols = columns;
 	 _depth = depth;
 	DEBUG("non-default Board ctor activated - board with only spaces created");
-	memset(data_, ' ', rows*columns);
+	memset(data_, ' ', rows*columns*depth);
 }
 
-Board::Board(const char** board, int rows, int columns, int depth) : BoardData(), data_(new char[rows * columns])
+/*Board::Board(const char** board, int rows, int columns, int depth) : BoardData(), data_(new char[rows * columns * depth])
 {
 	_rows = rows;
 	_cols = columns;
 	_depth = depth;
 	DEBUG("non-default Board ctor activated");
+	Coordinate c(rows, columns, depth);
 	for (int i = 1; i <= rows; i++)
 	{
 		for (int j = 1; j <= columns; j++)
 		{
-			setSlot(i , j, board[i-1][j-1]);
+			setSlot(c, board[i-1][j-1]);
 		}
 	}
-}
+}*/
 
 
 bool Board::SetBoardFromFile(const char* path)
@@ -128,22 +132,23 @@ Board& Board::operator=(const Board& other)
 	DEBUG("operator= of Board was called");
 	if (this != &other)
 	{
-		if (_cols*_rows != other._cols*other._rows) //bummer
+		if (_cols*_rows*_depth != other._cols*other._rows * other._depth) //bummer
 		{
 			delete[] data_;
-			data_ = new char[other._cols*other._rows];
+			data_ = new char[other._cols*other._rows*other._depth];
 		}
 		_cols = other._cols;
 		_rows = other._rows;
-		memcpy(data_, other.data_, _rows*_cols);
+		_depth = other._depth;
+		memcpy(data_, other.data_, _rows*_cols*_depth);
 	}
 	//self assignment
 	return *this;
 }
 
-
+/* OBSOLOTE - use charAt instead*/
 /*In the game, indexing starts at 1*/
-char Board::operator()(int row, int column) const
+/*char Board::operator()(int row, int column) const
 {
 	row -= 1;
 	column -= 1;
@@ -152,7 +157,7 @@ char Board::operator()(int row, int column) const
 		return data_[_cols*row + column];
 	}
 	throw std::out_of_range("Trying to access invalid index in the board.");
-}
+}*/
 
 bool Board::isLegalBoardElement(char marineObject)
 {
@@ -181,6 +186,15 @@ bool Board::isUserShip(int user_id, char marineObject)
 	else
 		throw std::logic_error("Invalid User");
 }
+
+int Board::coordToDataIndex(Coordinate c) const
+{
+	int row = c.row - 1;
+	int col = c.col - 1;
+	int depth = c.depth - 1;
+	return row*_cols*_depth + col*_depth + depth;
+}
+
 bool Board::isAShip(char marineObject)
 {
 	if (marineObject == Board::A_BOAT ||
@@ -205,7 +219,7 @@ bool Board::isBShip(char marineObject)
 	return false;
 }
 
-void Board::setSlot(int row, int col, char marineObject)
+void Board::setSlot(Coordinate c, char marineObject)
 {
 	if (marineObject == Board::SEA         ||
 		marineObject == Board::A_BOAT	   ||
@@ -217,11 +231,9 @@ void Board::setSlot(int row, int col, char marineObject)
 		marineObject == Board::B_SUBMARINE ||
 		marineObject == Board::B_DESTROYER)
 	{
-		if (isInBoard(row,col))
+		if (isInBoard(c))
 		{
-			row -= 1;
-			col -= 1;
-			data_[row*_cols + col] = marineObject;
+			data_[coordToDataIndex(c)] = marineObject;
 		}
 		else
 		{
@@ -234,30 +246,31 @@ void Board::setSlot(int row, int col, char marineObject)
 	}
 }
 
-int Board::getNumOfRows() const
+/* OBSOLETE - user rows() instead */
+/*int Board::getNumOfRows() const
 {
 	return _rows;
-}
+}*/
 
-int Board::getNumOfCols() const
+/* OBSOLETE - user cols() instead */
+/*int Board::getNumOfCols() const
 {
 	return _cols;
-}
+}*/
 
-bool Board::isInBoard(int row, int col) const
+bool Board::isInBoard(Coordinate c) const
 {
-	if (row >=1 and row <= _rows and col >= 1 and col <= _cols)
-		return true;
-	return false;
+	return c.row >= 1 and c.row <= _rows and c.col >= 1 and c.col <= _cols and c.depth >= 1 and c.depth <= _depth;			
 }
 
-bool Board::isInBoard(pair<int, int> crd) const
+bool Board::isInBoard(int row, int col, int depth) const
 {
-    return isInBoard(crd.first, crd.second);
+	return isInBoard(Coordinate(row, col, depth));
 }
 
 
-std::ostream& operator<<(std::ostream &strm, const Board &brd) {
+/* OBSOLETE */
+/*std::ostream& operator<<(std::ostream &strm, const Board &brd) {
 	// making columns
 	strm << "    ";
 	for(int i = 1 ; i <= brd._cols ; i++)
@@ -282,24 +295,32 @@ std::ostream& operator<<(std::ostream &strm, const Board &brd) {
 		strm << endl;
 	}
 	return strm;
+}*/
+
+
+void Board::revealSurroundings(int row, int col, int depth , char ship_char, Board &board, vector<Coordinate> &coords)
+{
+	revealSurroundings(Coordinate(row, col, depth), ship_char, board, coords);
 }
 
 
-
-void Board::revealSurroundings(int row, int col, char ship_char, Board &board, vector<pair<int, int>> &coords) const
+void Board::revealSurroundings(Coordinate c, char ship_char, Board &board, vector<Coordinate> &coords) 
 {
-	if (board(row, col) == ship_char)
+	if (board.charAt(c) == ship_char)
 	{
-		board.setSlot(row, col, Board::SEA);
-		coords.push_back(make_pair(row, col));
-		int rows[2] = { row + 1, row - 1 };
-		int cols[2] = { col + 1, col - 1 };
+		board.setSlot(c, Board::SEA);
+		coords.push_back(c);
+		int rows[2] = { c.row + 1, c.row - 1 };
+		int cols[2] = { c.col + 1, c.col - 1 };
+		int depths[2] = { c.depth + 1, c.depth - 1 };
 		for (int i = 0; i < 2; i++)
 		{
-			if (board.isInBoard(row, cols[i]))
-				revealSurroundings(row, cols[i], ship_char, board, coords);
-			if (board.isInBoard(rows[i], col))
-				revealSurroundings(rows[i], col, ship_char, board, coords);
+			if (board.isInBoard(rows[i], c.col, c.depth))
+				revealSurroundings(rows[i], c.col, c.depth, ship_char, board, coords);
+			if (board.isInBoard(c.row, cols[i], c.depth))
+				revealSurroundings(c.row, cols[i], c.depth, ship_char, board, coords);
+			if (board.isInBoard(c.row, c.col,depths[i]))
+				revealSurroundings(c.row, c.col, depths[i], ship_char, board, coords);
 		}
 	}
 }
@@ -308,31 +329,35 @@ void Board::revealSurroundings(int row, int col, char ship_char, Board &board, v
 void Board::findShips(int player_id, vector<Ship>& ships) const
 {
 	Board copiedBoard(*this);
-	for (int i = 1; i <= copiedBoard.getNumOfRows(); i++)
+	for (int i = 1; i <= copiedBoard.rows(); i++)
 	{
-		for (int j = 1; j <= copiedBoard.getNumOfCols(); j++)
+		for (int j = 1; j <= copiedBoard.cols(); j++)
 		{
-			if (Board::isUserShip(player_id, copiedBoard(i, j))) //if ship found
+			for (int k = 1; j <= copiedBoard.depth(); k++)
 			{
-				vector<pair<int, int>> coords = vector<pair<int, int>>();
-				char ship_char = copiedBoard(i, j);
-				Ship::ship_type ship_type = static_cast<Ship::ship_type>(copiedBoard(i, j));
-				revealSurroundings(i, j, ship_char, copiedBoard, coords);
-				ships.push_back(Ship(ship_type, &coords));
+				if (Board::isUserShip(player_id, copiedBoard.charAt(Coordinate(i,j,k)))) //if ship found
+				{
+					vector<Coordinate> coords = vector<Coordinate>();
+					char ship_char = copiedBoard.charAt(Coordinate(i, j, k));
+					Ship::ship_type ship_type = static_cast<Ship::ship_type>(copiedBoard.charAt(Coordinate(i, j, k)));
+					revealSurroundings(Coordinate(i, j, k), ship_char, copiedBoard, coords);
+					ships.push_back(Ship(ship_type, &coords));
+				}
 			}
 		}
 	}
 
 }
 
-pair<int,int> Board::getNextCoord(int row, int col) const
+/* OBSOLETE */
+/*pair<int,int> Board::getNextCoord(int row, int col) const
 {
 	if (row == this->_rows && col == this->_cols)
 		return make_pair(1, 1);
 	if (col == this->_cols)
 		return make_pair(row + 1, 1);
 	return make_pair(row, col + 1);
-}
+}*/
 
 const char* Board::getData() const
 {

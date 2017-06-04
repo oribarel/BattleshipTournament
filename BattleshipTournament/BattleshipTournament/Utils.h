@@ -47,6 +47,7 @@ Intense White    -           15
 #define DEBUG(x) do {} while (0)
 #endif
 
+struct Coordinate;
 using namespace std;
 
 
@@ -67,6 +68,7 @@ class Utils
 		static void set_delay(int delay);
 		static string Utils::find_file(const string& path_expr_to_find, int player_id, bool at_least_two, bool& file_found);
 		static void Utils::ShowConsoleCursor(bool showFlag);
+		static bool Utils::doesCoordsEqual(Coordinate c1, Coordinate c2);
 		static const int DEFAULT_PRINT_DELAY = 2000;
 		static const int DEFAULT_START_ANIMATION_DELAY = 350;
 		static const int DEFAULT_END_ANIMATION_DELAY = 500;

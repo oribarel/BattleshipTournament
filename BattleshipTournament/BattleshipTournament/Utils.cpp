@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include "GameManager.h"
+#include <iso646.h>
 
 using namespace std;
 
@@ -161,5 +162,10 @@ void Utils::ShowConsoleCursor(bool showFlag)
 	GetConsoleCursorInfo(out, &cursorInfo);
 	cursorInfo.bVisible = showFlag; // set the cursor visibility
 	SetConsoleCursorInfo(out, &cursorInfo);
+}
+
+bool Utils::doesCoordsEqual(Coordinate c1, Coordinate c2)
+{
+	return c1.row == c2.row and c1.col == c2.col and c1.depth == c2.depth;
 }
 

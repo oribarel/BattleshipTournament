@@ -1,6 +1,7 @@
 #pragma once
 #include <utility>
 #include <vector>
+#include "IBattleshipGameAlgo.h"
 
 // Forward declaration for Board Class
 class Board;
@@ -29,8 +30,8 @@ public:
 
 	Ship();
 	Ship(const Ship& ship);
-	Ship & operator=(Ship & other);
-	Ship(ship_type type, vector<pair<int, int>> *coordinates_only);
+	Ship & operator=(Ship & other) const;
+	Ship::Ship(ship_type type, vector<Coordinate> *coordinates_only);
 	~Ship();
 	
 	//-- queries
@@ -39,24 +40,25 @@ public:
 	bool isBShip() const;
 	static bool Ship::isBShip(char c);
 	bool isSunk() const;
-	bool containsCoord(int row, int col) const;
-	bool Ship::isValidShip(const vector<pair<pair<int, int>, bool>>& coordinates, ship_type type);
-	static bool isAdjacentCoordinates(pair<int, int> a, pair<int, int> b); 
+	bool Ship::containsCoord(Coordinate c) const;
+	static bool Ship::isValidShip(const vector<pair<Coordinate, bool>>& coordinates, ship_type type);
+	static bool Ship::isAdjacentCoordinates(Coordinate c1, Coordinate c2);
 	bool isAdjacentShips(Ship other_ship) const;
 
 	//-- getters
 	static int getSizeOfShipType(Ship::ship_type type);
-	const vector<pair<pair<int, int>, bool>>& Ship::getCoordinates() const;
-    vector<pair<int, int>> getOnlyCoords() const;
-    vector<pair<int, int>> getAdjacentCoordinates(const Board& brd) const;
-	static int getRow(vector<pair<pair<int, int>, bool>>::const_reference pair);
-	static int getCol(vector<pair<pair<int, int>, bool>>::const_reference pair);
+	const vector<pair<Coordinate, bool>>& Ship::getCoordinates() const;
+	vector<Coordinate> Ship::getOnlyCoords() const;
+	vector<Coordinate> Ship::getAdjacentCoordinates(const Board& brd) const;
+	static int Ship::getRow(vector<pair<Coordinate, bool>>::const_reference pair);
+	static int Ship::getCol(vector<pair<Coordinate, bool>>::const_reference pair);
+	static int Ship::getDepth(vector<pair<Coordinate, bool>>::const_reference pair);
 	int getScoreForSinking() const;
 	bool getValid() const;
 	Ship::ship_type getType() const;
 
 	//-- operations
-	void hitAt(int row, int col);
+	void Ship::hitAt(Coordinate c);
 
 
 private:
@@ -64,7 +66,7 @@ private:
 	size_t size;
 	//pair<int, int> start;
 	//pair<int, int> end;
-	vector<pair<pair<int, int>,bool>> coordinates; // bool is "isHit" (false if not hit)
+	vector<pair<Coordinate,bool>> coordinates; // bool is "isHit" (false if not hit)
 	bool valid; //true is ship is of valid shape
 };
 

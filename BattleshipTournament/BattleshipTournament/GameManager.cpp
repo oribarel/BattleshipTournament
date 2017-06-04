@@ -54,7 +54,7 @@ bool GameManager::initialize_board(string file_board)
 
 void GameManager::free_board(const char** board) const
 {
-	for (int i = 0; i < brd.getNumOfRows(); i++)
+	for (int i = 0; i < brd.rows(); i++)
 		delete[] board[i];
 	delete[] board;
 }
@@ -109,7 +109,7 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 	}
 	players[player_id].algo = getFunc();
 	const char** board = getBoardOfPlayer(player_id);
-	players[player_id].algo->setBoard(board, brd.getNumOfRows(), brd.getNumOfCols());
+	players[player_id].algo->setBoard(board, brd.rows(), brd.cols());
 	retVal &= players[player_id].algo->init(dir_path);
 	if (!retVal)
 	{
@@ -528,9 +528,9 @@ Ship *GameManager::getShipAtCrd(int row, int col)
 void GameManager::findShips(char user, vector<Ship>& ships)
 {
 	Board copiedBoard(brd);
-	for (int i = 1; i <= copiedBoard.getNumOfRows(); i++)
+	for (int i = 1; i <= copiedBoard.rows(); i++)
 	{
-		for (int j = 1; j <= copiedBoard.getNumOfCols(); j++)
+		for (int j = 1; j <= copiedBoard.cols(); j++)
 		{
 			if (Board::isUserShip(user, copiedBoard(i, j))) //if ship found
 			{
@@ -547,12 +547,11 @@ void GameManager::findShips(char user, vector<Ship>& ships)
 
 
 
-// this function works only for 10X10 boards
 // the board that is alocated here should be freed
 const char** GameManager::getBoardOfPlayer(int player_id) const
 {
-	const int rows = brd.getNumOfRows();
-	const int cols = brd.getNumOfCols();
+	const int rows = brd.rows();
+	const int cols = brd.cols();
 	const char **board = new const char*[rows];
 	for (int row = 0; row < rows; row++)
 	{

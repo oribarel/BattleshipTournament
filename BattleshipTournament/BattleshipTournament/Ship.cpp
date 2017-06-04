@@ -15,7 +15,7 @@ Ship::Ship(const Ship & ship) : type(ship.type), size(ship.size),
 {
 }
 
-Ship& Ship::operator=(Ship& other)
+Ship& Ship::operator=(Ship& other) const
 {
 	DEBUG("Oh no, operator= of Ship was used!");
 	return other;
@@ -43,11 +43,11 @@ int Ship::getScoreForSinking() const
 	}
 }
 
-void Ship::hitAt(int row, int col)
+void Ship::hitAt(Coordinate c)
 {
-	for (vector<pair<pair<int, int>, bool>>::iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+	for (vector<pair<Coordinate, bool>>::iterator it = coordinates.begin(); it != coordinates.end(); ++it)
 	{
-		if (make_pair(row, col) == it->first)
+		if (Utils::doesCoordsEqual(c,it->first))
 		{
 			it->second = true;
 		}
@@ -56,7 +56,7 @@ void Ship::hitAt(int row, int col)
 
 bool Ship::isSunk() const
 {
-	for (vector<pair<pair<int, int>, bool>>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+	for (vector<pair<Coordinate, bool>>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
 	{
 		if (!it->second) //second is a bool which means "is Hit"
 			return false;
@@ -64,12 +64,12 @@ bool Ship::isSunk() const
 	return true;
 
 }
-bool Ship::containsCoord(int row, int col) const
+bool Ship::containsCoord(Coordinate c) const
 {
 	bool contains = false;
-	for (vector<pair<pair<int, int>, bool>>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+	for (vector<pair<Coordinate, bool>>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
 	{
-		if (it->first == make_pair(row, col))
+		if (Utils::doesCoordsEqual(c, it->first))
 		{
 			contains = true;
 			break;
@@ -78,13 +78,17 @@ bool Ship::containsCoord(int row, int col) const
 	return contains;
 }
 
-int Ship::getRow(vector<pair<pair<int, int>, bool>>::const_reference pair) 
+int Ship::getRow(vector<pair<Coordinate, bool>>::const_reference pair) 
 {
-	return pair.first.first;
+	return pair.first.row;
 }
-int  Ship::getCol(vector<pair<pair<int, int>, bool>>::const_reference pair) 
+int Ship::getCol(vector<pair<Coordinate, bool>>::const_reference pair)
 {
-	return pair.first.second;
+	return pair.first.col;
+}
+int Ship::getDepth(vector<pair<Coordinate, bool>>::const_reference pair)
+{
+	return pair.first.depth;
 }
 
 Ship::ship_type Ship::getType() const
@@ -154,35 +158,43 @@ int Ship::getSizeOfShipType(Ship::ship_type type)
 }
 
 
-bool Ship::isValidShip(const vector<pair<pair<int, int>, bool>>& coordinates, ship_type type)
+bool Ship::isValidShip(const vector<pair<Coordinate, bool>>& coordinates, ship_type type)
 {
-	int cur_row, cur_col;
-	bool dif_row = false, dif_col = false;
+	int cur_row, cur_col, cur_depth;
+	bool dif_row = false, dif_col = false, dif_depth = false;
 	size_t size = coordinates.size();
 
 	int row = Ship::getRow((coordinates)[0]);
 	int col = Ship::getCol((coordinates)[0]);
+	int depth = Ship::getDepth((coordinates)[0]);
 	for(size_t i = 0; i < size; i++)
 	{
 		cur_row = Ship::getRow((coordinates)[i]);
 		cur_col = Ship::getCol((coordinates)[i]);
+		cur_depth = Ship::getDepth((coordinates)[i]);		
 		if (cur_row != row)
 			dif_row = true;
 		if (cur_col != col)
 			dif_col = true;
+		if (cur_depth != depth)
+			dif_depth = true;
 	}
-	return !((dif_row && dif_col) || size > MAXIMUM_SHIP_SIZE || getSizeOfShipType(type) != size);
+	return !((dif_row and dif_col) or
+		(dif_row and dif_depth) or
+		(dif_col and dif_depth) or
+		size > MAXIMUM_SHIP_SIZE or
+		getSizeOfShipType(type) != size);
 
 }
 
-const vector<pair<pair<int, int>, bool>>& Ship::getCoordinates() const
+const vector<pair<Coordinate, bool>>& Ship::getCoordinates() const
 {
 	return coordinates;
 }
 
-vector<pair<int, int>> Ship::getOnlyCoords() const
+vector<Coordinate> Ship::getOnlyCoords() const
 {
-    auto onlyCrds = vector<pair<int, int>>();
+    auto onlyCrds = vector<Coordinate>();
     for (auto const& crdHitPair : coordinates)
     {
         onlyCrds.push_back(crdHitPair.first);
@@ -190,26 +202,29 @@ vector<pair<int, int>> Ship::getOnlyCoords() const
     return onlyCrds;
 }
 
-vector<pair<int, int>> Ship::getAdjacentCoordinates(const Board& brd) const
+vector<Coordinate> Ship::getAdjacentCoordinates(const Board& brd) const
 {
     auto onlyCrds = getOnlyCoords();
-    auto coordsSet = set<pair<int, int>>(onlyCrds.begin(), onlyCrds.end());
-    auto adjacents = set<pair<int, int >>();
+    auto coordsSet = set<Coordinate>(onlyCrds.begin(), onlyCrds.end());
+    auto adjacents = set<Coordinate>();
     for (auto const& crd : coordsSet)
     {
-        for (int k = 0; k < 4; k++)
+        for (int k = 1; k < 7; k++)
         {
-            int i = (k % 2 == 0) ? k - 1 : 0;
-            int j = (k % 2 == 0) ? 0 : k - 2;
+            int a = (k == 1 or k == 3) ? k - 2 : 0;
+            int b = (k == 2 or k == 4) ? k - 3 : 0;
+			int c = (k == 5 or k ==6) ? (k-5)+(k == 5 ? -1: 1): 0;
 
             /* Truth table for convenience:
-             * k    i   j
-             * 0    -1  0
-             * 1    0   -1
-             * 2    1   0
-             * 3    0   1
+             * k    a   b	c
+             * 0    -1  0	0
+             * 1    0   -1	0
+             * 2    1   0	0
+             * 3    0   1	0
+             * 4	0	0	1
+             * 5	0	0	-1
              */
-            auto currCrd = make_pair(crd.first + i, crd.second + j);
+            auto currCrd = Coordinate(crd.row + a, crd.col + b, crd.depth + c);
 
             //continue if currCrd is either not in board or a part of the ship itself
             if (!brd.isInBoard(currCrd) || coordsSet.count(currCrd) == 1)
@@ -217,17 +232,15 @@ vector<pair<int, int>> Ship::getAdjacentCoordinates(const Board& brd) const
             adjacents.insert(currCrd);
         }
     }
-    return vector <pair<int, int>>(adjacents.begin(), adjacents.end());
+    return vector<Coordinate>(adjacents.begin(), adjacents.end());
 }
 
-Ship::Ship(ship_type type, vector<pair<int, int>> *coordinates_only) :type(type), coordinates(vector<pair<pair<int, int>, bool>>())
+Ship::Ship(ship_type type, vector<Coordinate> *coordinates_only) :type(type), coordinates(vector<pair<Coordinate, bool>>())
 {	
 	this->size = coordinates_only->size();
 	for (int i = 0; i < size; i++)
 	{
-		int row = (*coordinates_only)[i].first;
-		int col = (*coordinates_only)[i].second;
-		coordinates.push_back(make_pair(make_pair(row,col), false));
+		coordinates.push_back(make_pair((*coordinates_only)[i], false));
 	}
 	this->valid = isValidShip(coordinates, type);
 }
@@ -237,28 +250,27 @@ bool Ship::getValid() const
 	return valid;
 }
 
-bool Ship::isAdjacentCoordinates(pair<int, int> a, pair<int, int> b)
+bool Ship::isAdjacentCoordinates(Coordinate c1, Coordinate c2)
 {
-	int a_x = a.first;
-	int a_y = a.second;
-	int b_x = b.first;
-	int b_y = b.second;
-
-	if (a_x == b_x && a_y == b_y - 1)
+	if (c1.row == c2.row and c1.col == c1. col and  c1.depth == c2.depth - 1)
 		return true;
-	if (a_x == b_x && a_y == b_y + 1)
+	if (c1.row == c2.row and c1.col == c1.col and  c1.depth == c2.depth + 1)
 		return true;
-	if (a_y == b_y && a_x == b_x - 1)
+	if (c1.row == c2.row and c1.col == c1.col -1 and  c1.depth == c2.depth)
 		return true;
-	if (a_y == b_y && a_x == b_x + 1)
+	if (c1.row == c2.row and c1.col == c1.col + 1 and c1.depth == c2.depth)
 		return true;	
+	if (c1.row == c2.row - 1 and c1.col == c1.col and c1.depth == c2.depth)
+		return true;
+	if (c1.row == c2.row + 1 and c1.col == c1.col and c1.depth == c2.depth)
+		return true;
 	return false;
 }
 
 bool Ship::isAdjacentShips(Ship other_ship) const
 {
-	for (vector<pair<pair<int, int>, bool>>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
-		for (vector<pair<pair<int, int>, bool>>::const_iterator it2 = other_ship.coordinates.begin(); it2 != other_ship.coordinates.end(); ++it2)
+	for (vector<pair<Coordinate, bool>>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+		for (vector<pair<Coordinate, bool>>::const_iterator it2 = other_ship.coordinates.begin(); it2 != other_ship.coordinates.end(); ++it2)
 			if (Ship::isAdjacentCoordinates(it->first, it2->first))
 				return true;
 	return false;
