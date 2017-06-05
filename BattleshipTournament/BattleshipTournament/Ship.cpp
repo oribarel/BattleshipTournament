@@ -205,8 +205,8 @@ vector<Coordinate> Ship::getOnlyCoords() const
 vector<Coordinate> Ship::getAdjacentCoordinates(const Board& brd) const
 {
     auto onlyCrds = getOnlyCoords();
-    auto coordsSet = set<Coordinate>(onlyCrds.begin(), onlyCrds.end());
-    auto adjacents = set<Coordinate>();
+    auto coordsSet = set<Coordinate, classcomp>(onlyCrds.begin(), onlyCrds.end());
+    auto adjacents = set<Coordinate, classcomp>();
     for (auto const& crd : coordsSet)
     {
         for (int k = 1; k < 7; k++)

@@ -50,13 +50,13 @@ char Board::charAt(Coordinate c) const
 }
 
 //non-default ctor
-Board::Board(int rows, int columns, int depth) : BoardData(), data_(new char[rows * columns * depth])
+Board::Board(int rows, int columns, int depth) : BoardData(), data_(make_unique<char[]>(rows * columns * depth))
 {
 	 _rows = rows;
 	 _cols = columns;
 	 _depth = depth;
 	DEBUG("non-default Board ctor activated - board with only spaces created");
-	memset(data_, ' ', rows*columns*depth);
+	memset(data_.get(), ' ', rows*columns*depth);
 }
 
 /*Board::Board(const char** board, int rows, int columns, int depth) : BoardData(), data_(new char[rows * columns * depth])
@@ -111,7 +111,8 @@ bool Board::SetBoardFromFile(const char* path)
 		if (safeGetline(infile, line))
 		{
 			readDimensionsFromFile(is_valid, line);
-		}		
+		}
+		
 		//read 2-D boards
 		while (is_valid and safeGetline(infile, line) && depth <= _depth)
 		{
@@ -149,20 +150,23 @@ bool Board::SetBoardFromFile(const char* path)
 }
 
 //dtor
-Board::~Board()
+Board::~Board() = default;
+/* OBSOLETE */
+//dtor
+/*Board::~Board()
 {
 	DEBUG("Board dtor activated");
 	delete[] data_;
-}
+}*/
 
 //copy ctor
-Board::Board(const Board &brd) : data_(new char[brd._rows * brd._cols])
+Board::Board(const Board &brd) : data_(make_unique<char[]>(brd._rows * brd._cols * brd._depth))
 {
 	_rows = brd._rows;
 	_cols = brd._cols;
 	_depth = brd._depth;
 	DEBUG("copy Board ctor activated");
-	memcpy(data_, brd.data_, brd._rows * brd._cols);
+	memcpy(data_.get(), brd.data_.get(), brd._rows * brd._cols);
 }
 
 Board& Board::operator=(const Board& other)
@@ -172,13 +176,13 @@ Board& Board::operator=(const Board& other)
 	{
 		if (_cols*_rows*_depth != other._cols*other._rows * other._depth) //bummer
 		{
-			delete[] data_;
-			data_ = new char[other._cols*other._rows*other._depth];
+			data_.reset();
+			data_ = make_unique<char[]>(other._rows * other._cols * other._depth);
 		}
 		_cols = other._cols;
 		_rows = other._rows;
 		_depth = other._depth;
-		memcpy(data_, other.data_, _rows*_cols*_depth);
+		memcpy(data_.get(), other.data_.get(), _rows*_cols*_depth);
 	}
 	//self assignment
 	return *this;
@@ -402,7 +406,5 @@ void Board::findShips(int player_id, vector<Ship>& ships) const
 	return make_pair(row, col + 1);
 }*/
 
-const char* Board::getData() const
-{
-	return data_;
-}
+// https://stackoverflow.com/questions/16011113/getter-and-setter-for-unique-ptr-object-dependency-injection
+

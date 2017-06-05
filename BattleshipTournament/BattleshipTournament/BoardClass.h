@@ -3,6 +3,7 @@
 #include <vector>
 #include "Ship.h"
 #include "IBattleshipGameAlgo.h"
+#include <memory>
 
 using namespace std;
 
@@ -58,7 +59,6 @@ public:
 	void Board::setSlot(Coordinate c, char marineObject);
 	bool SetBoardFromFile(const char* path);
 
-	const char* Board::getData() const;
 
 
 	//pair<int, int> Board::getNextCoord(int row, int col) const;
@@ -66,7 +66,8 @@ public:
 	int Board::coordToDataIndex(Coordinate c) const;
 	int Board::coordToDataIndex(int row, int col, int depth) const;
 
+
 private:
-	char *data_;
+	unique_ptr<char[]>  data_;
 
 };

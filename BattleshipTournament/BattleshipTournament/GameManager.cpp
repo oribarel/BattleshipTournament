@@ -2,6 +2,7 @@
 #include "Ship.h"
 #include <iso646.h>
 #include <direct.h>
+#include <map>
 
 using namespace std;
 
@@ -23,7 +24,7 @@ bool GameManager::initialize_board(string file_board)
 {
 	bool set_boards_sucess = true;
 	//clear terminal
-	system("cls");
+	//system("cls");
 	// set board using file
 	set_boards_sucess = brd.SetBoardFromFile((file_board).c_str());
 	if (!set_boards_sucess)
@@ -32,8 +33,8 @@ bool GameManager::initialize_board(string file_board)
 		return false;
 	}
 	//DEBUG(*brd);
-	if (!Utils::get_quiet())
-		cout << brd << endl;
+	//if (!Utils::get_quiet())
+	//	cout << brd << endl;
 
 	// find ships
 	this->brd.findShips(PLAYER_A, players[PLAYER_A].ships);
@@ -51,13 +52,13 @@ bool GameManager::initialize_board(string file_board)
 	return true;
 }
 
-
-void GameManager::free_board(const char** board) const
+/* OBSOLETE */
+/*void GameManager::free_board(const char** board) const
 {
 	for (int i = 0; i < brd.rows(); i++)
 		delete[] board[i];
 	delete[] board;
-}
+}*/
 
 bool GameManager::find_dll(string dir_path, int player_id, string& dll)
 {
@@ -100,17 +101,17 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 	// Get function pointer
 	// define function of the type we expect
 	typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
-	GetAlgoFunc getFunc;
-	getFunc = (GetAlgoFunc)GetProcAddress(hDll, "GetAlgorithm");
+	GetAlgoFunc getFunc = reinterpret_cast<GetAlgoFunc>(GetProcAddress(hDll, "GetAlgorithm"));
 	if (!getFunc)
 	{
 		std::cout << "Cannot load dll: " << full_path << std::endl;
 		return false;
 	}
 	players[player_id].algo = getFunc();
-	const char** board = getBoardOfPlayer(player_id);
-	players[player_id].algo->setBoard(board, brd.rows(), brd.cols());
-	retVal &= players[player_id].algo->init(dir_path);
+	auto board = getBoardOfPlayer(player_id);
+	players[player_id].algo->setBoard(*board);
+	/* TODO: check this */
+	players[player_id].algo->setPlayer(player_id);
 	if (!retVal)
 	{
 		std::cout << "Algorithm initialization failed for dll: " << full_path << std::endl;
@@ -118,7 +119,7 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 	}
 
 	// cleanup
-	free_board(board);
+	//free_board(board);
 
 	return retVal;
 }
@@ -218,8 +219,8 @@ numOfPlayers(number_of_players), brd(Board())
 	player1.algo = nullptr;
 	player2.algo = nullptr;
 
-	player1.color = Utils::MAGNETA_COLOR;
-	player2.color = Utils::GREEN_COLOR;
+	//player1.color = Utils::MAGNETA_COLOR;
+	//player2.color = Utils::GREEN_COLOR;
 
 	players[PLAYER_A] = player1;
 	players[PLAYER_B] = player2;	
@@ -250,18 +251,34 @@ int GameManager::numOfValidShips(char user) const
 }
 
 
-void GameManager::setPlayersBoards()
+bool GameManager::validate_same_ships_quantities() const
 {
-	/* As a manager of stupid players, I know in advance they don't care about the
-	 * board so I don't make special effort in giving it to them...
-	 */
-	
+	map<Ship::ship_type, int> ship_types_A = { {Ship::ship_type::A_BOAT,0}, {Ship::ship_type::A_SATIL,0}, {Ship::ship_type::A_SUBMARINE,0}, {Ship::ship_type::A_DESTROYER,0} };
+	map<Ship::ship_type, int> ship_types_B = { { Ship::ship_type::B_BOAT,0 },{ Ship::ship_type::B_SATIL,0 },{ Ship::ship_type::B_SUBMARINE,0 },{ Ship::ship_type::B_DESTROYER,0 } };
+
+	/* build histogram for A ships */
+	for (auto it = players[PLAYER_A].ships.begin(); it != players[PLAYER_A].ships.end(); ++it)
+	{
+		ship_types_A[it->getType()]++;
+	}
+	/* build histogram for B ships */
+	for (auto it = players[PLAYER_B].ships.begin(); it != players[PLAYER_B].ships.end(); ++it)
+	{
+		ship_types_A[it->getType()]++;
+	}
+	/* compare histograms */
+	return ship_types_A[Ship::ship_type::A_BOAT] == ship_types_B[Ship::ship_type::B_BOAT] and
+		ship_types_A[Ship::ship_type::A_SATIL] == ship_types_B[Ship::ship_type::B_SATIL] and
+		ship_types_A[Ship::ship_type::A_SUBMARINE] == ship_types_B[Ship::ship_type::B_SUBMARINE] and
+		ship_types_A[Ship::ship_type::A_DESTROYER] == ship_types_B[Ship::ship_type::B_DESTROYER];
+
+
 }
 
 bool GameManager::validate_ships_shape(int player_id) const
 {
-	Ship::ship_type ship_types_A[4] = { Ship::ship_type::A_BOAT, Ship::ship_type::A_SATIL, Ship::ship_type::A_SUBMARINE, Ship::ship_type::A_DESTROYER };
-	Ship::ship_type ship_types_B[4] = { Ship::ship_type::B_BOAT, Ship::ship_type::B_SATIL, Ship::ship_type::B_SUBMARINE, Ship::ship_type::B_DESTROYER };
+	Ship::ship_type ship_types_A[NUMBER_OF_SHIP_TYPES] = { Ship::ship_type::A_BOAT, Ship::ship_type::A_SATIL, Ship::ship_type::A_SUBMARINE, Ship::ship_type::A_DESTROYER };
+	Ship::ship_type ship_types_B[NUMBER_OF_SHIP_TYPES] = { Ship::ship_type::B_BOAT, Ship::ship_type::B_SATIL, Ship::ship_type::B_SUBMARINE, Ship::ship_type::B_DESTROYER };
 	Ship::ship_type *ship_types;
 	if (player_id == PLAYER_A)
 		ship_types = ship_types_A;
@@ -269,7 +286,7 @@ bool GameManager::validate_ships_shape(int player_id) const
 		ship_types = ship_types_B;
 	bool is_valid = true;
 	// validate shape of A ships
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < NUMBER_OF_SHIP_TYPES; i++)
 	{
 		for (vector<Ship>::const_iterator it = players[player_id].ships.begin(); it != players[player_id].ships.end(); ++it)
 		{
@@ -312,36 +329,13 @@ bool GameManager::isValidBoard() const
 	// validate shape of ships
 	bool is_valid = validate_ships_shape(PLAYER_A) && validate_ships_shape(PLAYER_B);
 	// validate number of A ships
-	int num_of_a_ships = numOfValidShips('A');
-	if (num_of_a_ships > 5)
-	{
-		//Requirement print
-		cout << "Too many ships for player A" << endl;
-		is_valid = false;
-	}
-	if (num_of_a_ships < 5)
-	{
-		//Requirement print
-		cout << "Too few ships for player A" << endl;
-		is_valid = false;
-	}	
+	//int num_of_a_ships = numOfValidShips('A');
 	// validate number of B ships
-	int num_of_b_ships = numOfValidShips('B');
-	if (num_of_b_ships > 5)
-	{
-		//Requirement print
-		cout << "Too many ships for player B" << endl;
-		is_valid = false;
-	}
-	if (num_of_b_ships < 5)
-	{
-		//Requirement print
-		cout << "Too few ships for player B" << endl;
-		is_valid = false;
-	}
-
+	//int num_of_b_ships = numOfValidShips('B');
 	// validate no adjacent ships
 	is_valid &= validate_no_adjacent_ships();
+	// validate same quantities of ships
+	is_valid &= validate_same_ships_quantities();
 	return is_valid;
 }
 
@@ -368,7 +362,7 @@ bool GameManager::allSunk(const vector<Ship>& ships)
 }
 
 /* OBSOLETE */
-void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color)
+/*void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color)
 {
 	Board& board = brd;
 	COORD hit_coord;
@@ -378,7 +372,7 @@ void GameManager::update_board_print(int player_color, Coordinate attack, int hi
 		Utils::updateBoardPrint(player_color, hit_coord, Board::SEA, hit_color);
 	else
 		Utils::updateBoardPrint(player_color, hit_coord, Utils::HIT_SIGN, hit_color);
-}
+}*/
 
 void GameManager::notify_players(int currPlayerInx, Coordinate attack, const Ship *shipPtr, bool is_hit) const
 {
@@ -406,9 +400,9 @@ void GameManager::mainLoopEndOfGamePrint() const
 }
 void GameManager::make_hit(int currPlayerInx, Coordinate attack, bool is_self_hit)
 {
-	Ship *shipPtr = getShipAtCrd(attack.row, attack.col); //player hits itself
-	shipPtr->hitAt(attack.row, attack.col);
-	update_board_print(players[currPlayerInx % 2].color, attack, is_self_hit ? players[currPlayerInx % 2].color: players[(currPlayerInx + 1) % 2].color); //update board print				
+	Ship *shipPtr = getShipAtCrd(attack); //player hits itself
+	shipPtr->hitAt(attack);
+	//update_board_print(players[currPlayerInx % 2].color, attack, is_self_hit ? players[currPlayerInx % 2].color: players[(currPlayerInx + 1) % 2].color); //update board print				
 	if (shipPtr->isSunk()) //if ship sinks grant points to enemy
 	{
 		if (is_self_hit)
@@ -430,20 +424,20 @@ void GameManager::mainLoop()
 		do
 		{
 			auto attack = currPlayer.algo->attack();
-			DEBUG("player " << currPlayerInx << " attack is "  << attack.row << ", " << attack.col);
+			DEBUG("player " << currPlayerInx << " attack is "  << attack.row << ", " << attack.col ", " << attack.depth);
 			DEBUG("Points:");
 			DEBUG("Player A: " << players[PLAYER_A].score);
 			DEBUG("Player B: " << players[PLAYER_B].score);
-			if (attack.row == -1 && attack.col == -1) //no more attacks for this player
+			if (attack.row == -1 and attack.col == -1 and attack.depth == -1) //no more attacks for this player
 			{
 				OutOfAttacks[currPlayerInx] = true;				
 				currPlayerInx = (currPlayerInx + 1) % 2;
 				break;
 			}
-			if (board(attack.row, attack.col) == Board::SEA || getShipAtCrd(attack.row, attack.col)->isSunk())
+			if (board.charAt(attack) == Board::SEA || getShipAtCrd(attack)->isSunk())
 			{	
-				int hit_color = board(attack.row, attack.col) == Board::SEA || getShipAtCrd(attack.row, attack.col)->isAShip() ? players[PLAYER_A].color : players[PLAYER_B].color;
-				update_board_print(players[(currPlayerInx) % 2].color, attack, hit_color); //update board print			
+				//int hit_color = board.charAt(attack) == Board::SEA || getShipAtCrd(attack)->isAShip() ? players[PLAYER_A].color : players[PLAYER_B].color;
+				//update_board_print(players[(currPlayerInx) % 2].color, attack, hit_color); //update board print			
 				notify_players(currPlayerInx, attack, nullptr, false); //notify players				
 				currPlayerInx = (currPlayerInx + 1) % 2; //nothing happens and the turn passes
 				break;
@@ -474,7 +468,7 @@ int GameManager::getNumOfPlayers() const
 bool GameManager::selfHit(PlayerData& player, Coordinate attack)
 {
 	Board& board = brd;
-	Ship *shipPtr = this->getShipAtCrd(attack.row, attack.col);
+	Ship *shipPtr = this->getShipAtCrd(attack);
 	if (shipPtr != nullptr)
 	{
 		if (player.id == 'A')
@@ -486,87 +480,49 @@ bool GameManager::selfHit(PlayerData& player, Coordinate attack)
 	return false;
 }
 
-Ship *GameManager::getShipAtCrd(int row, int col)
+Ship *GameManager::getShipAtCrd(Coordinate c)
 {
 	Board& board = brd;
 	vector<Ship> *ships;
-	if ((board.isInBoard(row, col)) && (board(row, col) != Board::SEA))
+	if ((board.isInBoard(c)) && (board.charAt(c) != Board::SEA))
 	{
-		if (isupper(board(row,col)))
+		if (isupper(board.charAt(c)))
 			ships = &players[PLAYER_A].ships;
 		else
-			ships = &players[PLAYER_B].ships;
-		
+			ships = &players[PLAYER_B].ships;		
 		for (vector<Ship>::iterator it = ships->begin(); it != ships->end(); ++it)
 		{
-			if (it->containsCoord(row, col))
+			if (it->containsCoord(c))
 				return &(*it);
 		}
 	}
 	return nullptr;
 }
 
-/*void GameManager::revealSurroundings(int row, int col, char ship_char, Board &board, vector<pair<int, int>> &coords)
-{
-	if (board(row, col) == ship_char)
-	{
-		board.setSlot(row, col, Board::SEA);
-		coords.push_back(make_pair(row, col));
-		int rows[2] = { row + 1, row - 1 };
-		int cols[2] = { col + 1, col - 1 };
-		for (int i = 0; i < 2 ; i++)
-		{
-				if(board.isInBoard(row, cols[i]))
-					revealSurroundings(row,cols[i], ship_char, board, coords);
-				if (board.isInBoard(rows[i], col))
-					revealSurroundings(rows[i], col, ship_char, board, coords);
-		}
-	}
-}
-
-//user should be 'A' or 'B'
-void GameManager::findShips(char user, vector<Ship>& ships)
-{
-	Board copiedBoard(brd);
-	for (int i = 1; i <= copiedBoard.rows(); i++)
-	{
-		for (int j = 1; j <= copiedBoard.cols(); j++)
-		{
-			if (Board::isUserShip(user, copiedBoard(i, j))) //if ship found
-			{
-				vector<pair<int, int>> coords = vector<pair<int, int>>();
-				char ship_char = copiedBoard(i, j);
-				Ship::ship_type ship_type = static_cast<Ship::ship_type>(copiedBoard(i, j));
-				revealSurroundings(i, j, ship_char, copiedBoard, coords);				
-				ships.push_back(Ship(ship_type, &coords));
-			}
-		}
-	}
-
-}*/
-
-
 
 // the board that is alocated here should be freed
-const char** GameManager::getBoardOfPlayer(int player_id) const
+unique_ptr<Board> GameManager::getBoardOfPlayer(int player_id) const
 {
 	const int rows = brd.rows();
 	const int cols = brd.cols();
-	const char **board = new const char*[rows];
-	for (int row = 0; row < rows; row++)
+	const int depths = brd.depth();
+
+	unique_ptr<Board> boardP = make_unique<Board>(rows, cols, depths);
+	for (int row = 1; row <= rows; row++)
 	{
-		char *row_chars = new char[rows];
-		for (int col = 0; col < cols; col++)
+		for (int col = 1; col <= cols; col++)
 		{
-			if ((player_id == PLAYER_A and Board::isBShip(brd(row + 1, col + 1))) or
-				(player_id == PLAYER_B and Board::isAShip(brd(row + 1, col + 1))))
-				row_chars[col] = Board::SEA;
-			else
-				row_chars[col] = brd(row + 1, col + 1);
-		}
-		board[row] = row_chars;		
+			for (int depth = 1; depth <= depths; depth++)
+			{
+				if (player_id == PLAYER_A and Board::isBShip(brd.charAt(Coordinate(row,col,depth))) or
+					(player_id == PLAYER_B and Board::isAShip(brd.charAt(Coordinate(row, col, depth)))))
+					boardP->setSlot(Coordinate(row, col, depth), Board::SEA);
+				else
+					boardP->setSlot(Coordinate(row, col, depth), brd.charAt(Coordinate(row, col, depth)));
+			}
+		}		
 	}
-	return board;
+	return boardP;
 
 
 }

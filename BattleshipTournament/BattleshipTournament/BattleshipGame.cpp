@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 	if (!success)
 		return -1;
 
-	manager.setPlayersBoards();
 
 	manager.mainLoop();
 

@@ -11,6 +11,12 @@ using namespace std;
 class Ship
 {
 public:
+	struct classcomp {
+		bool operator() (const Coordinate& c1, const Coordinate& c2) const
+		{
+			return c1.row < c2.row || (c1.row == c2.row && c1.col < c2.col) || (c1.row == c2.row && c1.col == c2.col && c1.depth < c2.depth);
+		}
+	};
 	
 	enum class ship_type : char { A_BOAT = 'B', A_SATIL = 'P' , A_SUBMARINE = 'M', A_DESTROYER = 'D',
 		B_BOAT = 'b', B_SATIL = 'p', B_SUBMARINE = 'm', B_DESTROYER = 'd'};
