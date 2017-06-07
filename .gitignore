@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+*build64*
+*/Debug/*
+*/x64/*
+*.tlog*

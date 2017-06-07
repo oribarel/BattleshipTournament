@@ -188,18 +188,24 @@ Board& Board::operator=(const Board& other)
 	return *this;
 }
 
-/* OBSOLOTE - use charAt instead*/
+
 /*In the game, indexing starts at 1*/
-/*char Board::operator()(int row, int column) const
+char Board::operator()(Coordinate crd) const
 {
-	row -= 1;
-	column -= 1;
-	if (-1 < row && row < _rows && -1 < column && column < _cols)
-	{
-		return data_[_cols*row + column];
-	}
-	throw std::out_of_range("Trying to access invalid index in the board.");
-}*/
+    crd.row -= 1;
+    crd.col -= 1;
+    crd.depth -= 1;
+
+    if (-1 < crd.row   && crd.row < _rows    &&
+        -1 < crd.col   && crd.col < _cols &&
+        -1 < crd.depth && crd.depth < _depth)
+    {
+        return data_[crd.depth * (_rows * _cols)
+            + crd.row * _cols
+            + crd.col];
+    }
+    throw std::out_of_range("Trying to access invalid index in the HeatMap.");
+}
 
 bool Board::isLegalBoardElement(char marineObject)
 {

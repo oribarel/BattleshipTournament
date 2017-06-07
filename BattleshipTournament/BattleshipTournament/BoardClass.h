@@ -41,7 +41,7 @@ public:
 	//Board::Board(const char** board, int rows, int columns, int depth); //non-default2
 	Board(const Board&); //copy ctor
 	Board& operator=(const Board&);
-	//char operator()(int, int) const;
+	char operator()(Coordinate crd) const;
 	//friend std::ostream& operator<<(std::ostream &strm, const Board &brd);
 	~Board();
 	static void Board::revealSurroundings(int row, int col, int depth, char ship_char, Board &board, vector<Coordinate> &coords);
