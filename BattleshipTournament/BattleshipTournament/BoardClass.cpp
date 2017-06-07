@@ -189,7 +189,7 @@ Board& Board::operator=(const Board& other)
 }
 
 
-/*In the game, indexing starts at 1*/
+/*TODO In the game, indexing starts at 1*/
 char Board::operator()(Coordinate crd) const
 {
     crd.row -= 1;
@@ -200,11 +200,10 @@ char Board::operator()(Coordinate crd) const
         -1 < crd.col   && crd.col < _cols &&
         -1 < crd.depth && crd.depth < _depth)
     {
-        return data_[crd.depth * (_rows * _cols)
-            + crd.row * _cols
-            + crd.col];
+        
+        return data_[coordToDataIndex(crd)];
     }
-    throw std::out_of_range("Trying to access invalid index in the HeatMap.");
+    throw std::out_of_range("Trying to access invalid index in the Board.");
 }
 
 bool Board::isLegalBoardElement(char marineObject)

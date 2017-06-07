@@ -19,8 +19,8 @@ public:
 
 	//-- ctors and dtors
 	GameManager();
-	GameManager(GameManager & other);
-	GameManager& GameManager::operator=(GameManager& other) const;
+	GameManager(GameManager & other) = delete;
+	GameManager& GameManager::operator=(GameManager& other) const = delete;
 	~GameManager();
 
 	//-- getters

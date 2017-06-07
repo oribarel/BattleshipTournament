@@ -8,16 +8,16 @@ using namespace std;
 
 
 
-GameManager::GameManager(GameManager& other)
-{
-	DEBUG("Oh no! copy ctor of GameManager was called!");
-}
+//GameManager::GameManager(GameManager& other)
+//{
+//	DEBUG("Oh no! copy ctor of GameManager was called!");
+//}
 
-GameManager& GameManager::operator=(GameManager& other) const
-{
-	DEBUG("Oh no, operator= of GameManager was used!");
-	return other;
-}
+//GameManager& GameManager::operator=(GameManager& other) const
+//{
+//	DEBUG("Oh no, operator= of GameManager was used!");
+//	return other;
+//}
 
 
 bool GameManager::initialize_board(string file_board)
