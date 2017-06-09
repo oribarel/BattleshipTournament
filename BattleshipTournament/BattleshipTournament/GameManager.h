@@ -13,6 +13,7 @@ typedef struct PlayerData
 	int color;
 
 } PlayerData;
+
 class GameManager
 {
 public:

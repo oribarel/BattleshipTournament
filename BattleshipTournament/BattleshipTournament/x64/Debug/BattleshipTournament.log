@@ -1,5 +1,6 @@
 ﻿  Utils.cpp
   TournamentManager.cpp
+c:\repos\battleshiptournament\battleshiptournament\battleshiptournament\tournamentmanager.cpp(14): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
   Ship.cpp
   ScoreBoard.cpp
   GameManager.cpp
