@@ -3,5 +3,6 @@
   BoardClass.cpp
   Battleship_MAP_player.cpp
   Generating Code...
+     Creating library C:\Repos\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.lib and object C:\Repos\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.exp
   MAP_Battleship_Player.vcxproj -> C:\Repos\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.dll
   MAP_Battleship_Player.vcxproj -> C:\Repos\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.pdb (Full PDB)

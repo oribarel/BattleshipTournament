@@ -33,8 +33,6 @@ public:
 	//-- inherited methods
 	char charAt(Coordinate c) const override;
 	
-	
-	
 	//empty constructor
 	Board::Board(int rows, int columns, int depth);//non-default
 	void readDimensionsFromFile(bool& is_valid, std::string line);

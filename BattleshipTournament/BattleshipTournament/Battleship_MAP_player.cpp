@@ -2,8 +2,12 @@
 #include <set>
 #include <exception>
 #include <ctime>
-#include <iso646.h>
 
+/* TODO: List
+    1. reset on set player
+    2. assume same ships
+    3. don't crash on wierd stuff like having no ships(?)
+*/
 
 /*************************************
 *  Battleship_MAP_player Functions   *

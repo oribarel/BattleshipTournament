@@ -114,14 +114,18 @@
     <ClInclude Include="BoardClass.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="IBattleshipGameAlgo.h" />
+    <ClInclude Include="ScoreBoard.h" />
     <ClInclude Include="Ship.h" />
+    <ClInclude Include="TournamentManager.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BattleshipGame.cpp" />
     <ClCompile Include="BoardClass.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="ScoreBoard.cpp" />
     <ClCompile Include="Ship.cpp" />
+    <ClCompile Include="TournamentManager.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
