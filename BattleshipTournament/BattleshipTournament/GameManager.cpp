@@ -89,8 +89,9 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 		return false;
 	}
 	players[player_id].algo = unique_ptr<IBattleshipGameAlgo>(getFunc());
-	auto board = getBoardOfPlayer(player_id);
-	players[player_id].algo->setBoard(*board);
+    Board aBrd(brd);
+	fillBoardOfPlayer(player_id, aBrd);
+	players[player_id].algo->setBoard(aBrd);
 	/* TODO: check this */
 	players[player_id].algo->setPlayer(player_id);
 	if (!retVal)
@@ -357,9 +358,22 @@ void GameManager::notify_players(int currPlayerInx, Coordinate attack, const Shi
 	}
 }
 
-pair<int, int> GameManager::runGame()
+pair<int, int> GameManager::runGame() const
 {
-    //todo: implement
+    //-- set players
+    players[PLAYER_A].algo->setPlayer(PLAYER_A);
+    players[PLAYER_B].algo->setPlayer(PLAYER_B);
+
+    //-- set boards
+    Board aBrd(brd);
+    Board bBrd(brd);
+    fillBoardOfPlayer(PLAYER_A, aBrd);
+    fillBoardOfPlayer(PLAYER_B, bBrd);
+    players[PLAYER_A].algo->setBoard(aBrd);
+    players[PLAYER_B].algo->setBoard(bBrd);
+    
+    //-- run game
+
     return pair<int, int>(1, 0);
 }
 
@@ -388,7 +402,7 @@ void GameManager::make_hit(int currPlayerInx, Coordinate attack, bool is_self_hi
 	notify_players(currPlayerInx, attack, shipPtr);	// notify players			
 }
 
-void GameManager::mainLoop()
+pair<int,int> GameManager::mainLoop()
 {
 	Utils::ShowConsoleCursor(false);
 	Board& board = brd;
@@ -433,6 +447,7 @@ void GameManager::mainLoop()
 	}
 	Utils::ShowConsoleCursor(true);
 	mainLoopEndOfGamePrint();
+    return make_pair(players[PLAYER_A].score, players[PLAYER_B].score);
 }
 
 int GameManager::getNumOfPlayers() const
@@ -476,29 +491,25 @@ Ship *GameManager::getShipAtCrd(Coordinate c)
 
 
 // the board that is alocated here should be freed
-unique_ptr<Board> GameManager::getBoardOfPlayer(int player_id) const
+void GameManager::fillBoardOfPlayer(int player_id, Board& fillBoard) const
 {
 	const int rows = brd.rows();
 	const int cols = brd.cols();
 	const int depths = brd.depth();
 
-	unique_ptr<Board> boardP = make_unique<Board>(rows, cols, depths);
-	for (int row = 1; row <= rows; row++)
-	{
-		for (int col = 1; col <= cols; col++)
-		{
-			for (int depth = 1; depth <= depths; depth++)
-			{
-				if (player_id == PLAYER_A and Board::isBShip(brd.charAt(Coordinate(row,col,depth))) or
-					(player_id == PLAYER_B and Board::isAShip(brd.charAt(Coordinate(row, col, depth)))))
-					boardP->setSlot(Coordinate(row, col, depth), Board::SEA);
-				else
-					boardP->setSlot(Coordinate(row, col, depth), brd.charAt(Coordinate(row, col, depth)));
-			}
-		}		
-	}
-	return boardP;
-
-
+    for (int row = 1; row <= rows; row++)
+    {
+        for (int col = 1; col <= cols; col++)
+        {
+            for (int depth = 1; depth <= depths; depth++)
+            {
+                if (player_id == PLAYER_A and Board::isBShip(brd.charAt(Coordinate(row, col, depth))) or
+                    (player_id == PLAYER_B and Board::isAShip(brd.charAt(Coordinate(row, col, depth)))))
+                    fillBoard.setSlot(Coordinate(row, col, depth), Board::SEA);
+                else
+                    fillBoard.setSlot(Coordinate(row, col, depth), brd.charAt(Coordinate(row, col, depth)));
+            }
+        }
+    }
 }
 

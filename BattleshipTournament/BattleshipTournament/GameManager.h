@@ -34,12 +34,12 @@ public:
 	bool selfHit(PlayerData& player, Coordinate attack);
 
 	//-- manager logic
-    pair<int, int> runGame();
+    pair<int, int> runGame() const;
 	void mainLoopEndOfGamePrint() const;
-	void mainLoop();
+	pair<int,int> mainLoop();
 
 	//-- utils
-	unique_ptr<Board> getBoardOfPlayer(int player_id) const;
+    void GameManager::fillBoardOfPlayer(int player_id, Board& fillBoard) const;
 	bool validate_same_ships_quantities() const;
 	bool validate_ships_shape(int player_id) const;
 	bool validate_no_adjacent_ships() const;
