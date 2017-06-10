@@ -5,9 +5,12 @@
 #include "Utils.h"
 
 
+struct gameEntry;
+class TournamentManager;
+
 typedef struct PlayerData
 {
-	IBattleshipGameAlgo *algo;
+	unique_ptr<IBattleshipGameAlgo> algo;
 	char id;
 	int score;
 	vector<Ship> ships;
@@ -19,10 +22,10 @@ class GameManager
 public:
 
 	//-- ctors and dtors
-	GameManager();
+	//GameManager();
 	GameManager(GameManager & other) = delete;
 	GameManager& GameManager::operator=(GameManager& other) const = delete;
-	~GameManager();
+	GameManager::GameManager(gameEntry ge, const TournamentManager& tm);
 
 	//-- getters
 	int getNumOfPlayers() const;
@@ -38,12 +41,13 @@ public:
 	//-- manager logic
 	bool initialize(int argc, char *argv[]);
 	void GameManager::mainLoopEndOfGamePrint() const;
+	pair<int, int> GameManager::runGame() const;
 	void mainLoop();
 
 
 	//-- utils
 	static bool GameManager::find_dll(string dir_path, int player_id, string& dll);
-	Board GameManager::getBoardOfPlayer(int player_id, Board& board) const;
+	void GameManager::getBoardOfPlayer(int player_id, Board& board) const;
 	bool GameManager::initialize_board(string file_board);
 	bool initialize_player(string dir_path, int player_id);
 	bool GameManager::initialize_players(string dir_path);

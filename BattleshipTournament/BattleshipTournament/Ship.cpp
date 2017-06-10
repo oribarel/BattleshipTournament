@@ -11,7 +11,7 @@ Ship::Ship()
 	
 }
 Ship::Ship(const Ship & ship) : type(ship.type), size(ship.size),
-	coordinates(ship.coordinates), valid(ship.valid)
+	coordinates(vector<pair<Coordinate, bool>>(ship.coordinates)), valid(ship.valid)
 {
 }
 

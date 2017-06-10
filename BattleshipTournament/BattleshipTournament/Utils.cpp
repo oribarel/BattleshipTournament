@@ -146,12 +146,11 @@ bool Utils::find_all_board_files(const string& dir_path, vector<BoardFullData>& 
 	}
 	else
 	{
-		int i = 0;
 		do
 		{
-			boards.push_back(BoardFullData());
-			boards[i].initialize_board(dir_path + "\\" + fileData.cFileName);
-			i++;
+			BoardFullData brd_full_data;
+			if(brd_full_data.initialize_board(dir_path + "\\" + fileData.cFileName))
+				boards.push_back(brd_full_data);
 		} while (FindNextFileA(hFind, &fileData));
 		FindClose(hFind);
 	}	
@@ -166,11 +165,11 @@ bool Utils::find_all_board_files(const string& dir_path, vector<BoardFullData>& 
 
 
 
-void Utils::load_dll (string dir_path, string dll, GetAlgoFunc& dll_algo_func, bool& loaded_successully)
+bool Utils::load_dll (string dir_path, DLLData& dll_data)
 {
 	// Load dynamic library
 	char full_path[_MAX_PATH];
-	string full_dll_path = dir_path + "\\" + dll;
+	string full_dll_path = dir_path + "\\" + dll_data.file_name;
 	_fullpath(full_path, full_dll_path.c_str(), _MAX_PATH);
 	HINSTANCE hDll = LoadLibraryA(full_path); // Notice: Unicode compatible version of LoadLibrary
 	if (!hDll)
@@ -182,15 +181,16 @@ void Utils::load_dll (string dir_path, string dll, GetAlgoFunc& dll_algo_func, b
 	// Get function pointer
 	// define function of the type we expect
 	typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
-	dll_algo_func = reinterpret_cast<GetAlgoFunc>(GetProcAddress(hDll, "GetAlgorithm"));
-	if (!dll_algo_func)
+	dll_data.algo_func = reinterpret_cast<GetAlgoFunc>(GetProcAddress(hDll, "GetAlgorithm"));
+	if (!dll_data.algo_func)
 	{
 		std::cout << "Cannot load dll: " << full_path << std::endl;		
 	}
 	else
 	{
-		loaded_successully = true;
+		return true;
 	}
+	return false;
 	
 }
 
@@ -202,24 +202,17 @@ bool Utils::get_dlls (string dir_path, vector<DLLData>& players)
 		path = "Working Directory";
 	string s_dll = "\\*.dll"; // only .dll endings
 	bool file_found = true;
-	find_all_dll_files(dir_path + s_dll, file_found, players);
+	find_all_dll_files(dir_path + s_dll, file_found, players, dir_path);
 	if (!file_found or players.size() <= 1)
 	{
 		cout << "Missing an algorithm (dll) file looking in path: " << path << endl;
 		return false;
 	}
-	else
-	{
-		for(auto& player : players)
-		{
-			load_dll(dir_path, player.file_name, player.algo_func, player.loaded_success);
-		}
-	}
 	return true;
 }
 
 
-void Utils::find_all_dll_files(const string& path_expr_to_find,bool& file_found, vector<DLLData>& players)
+void Utils::find_all_dll_files(const string& path_expr_to_find,bool& file_found, vector<DLLData>& players, string dir_path)
 {
 	WIN32_FIND_DATAA fileData;
 	HANDLE hFind;
@@ -234,7 +227,9 @@ void Utils::find_all_dll_files(const string& path_expr_to_find,bool& file_found,
 	{
 		do
 		{
-			players.push_back(DLLData(fileData.cFileName));
+			DLLData dll_data(fileData.cFileName);
+			if(load_dll(dir_path, dll_data))
+				players.push_back(dll_data);
 		} while (FindNextFileA(hFind, &fileData));
 		FindClose(hFind);
 	}

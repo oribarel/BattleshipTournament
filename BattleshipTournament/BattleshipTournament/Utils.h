@@ -61,8 +61,7 @@ struct DLLData
 {
 	string file_name;
 	GetAlgoFunc algo_func;
-	bool loaded_success;
-	DLLData(string file_name_) : file_name(file_name_), algo_func(nullptr), loaded_success(false) {}
+	DLLData(string file_name_) : file_name(file_name_), algo_func(nullptr) {}
 };
 
 //const string ERROR_FINDING_PATH = "error finding path";
@@ -84,9 +83,9 @@ class Utils
 		static string Utils::find_file(const string& path_expr_to_find, int player_id, bool at_least_two, bool& file_found);
 		static void Utils::ShowConsoleCursor(bool showFlag);
 		static bool Utils::doesCoordsEqual(Coordinate c1, Coordinate c2);		
-		static void Utils::load_dll(string dir_path, string dll, GetAlgoFunc& dll_algo_func, bool& loaded_successully);
+		static bool Utils::load_dll(string dir_path, DLLData& dll_data);
 		static bool Utils::get_dlls(string dir_path, vector<DLLData>& players);
-		static void Utils::find_all_dll_files(const string& path_expr_to_find, bool& file_found, vector<DLLData>& players);
+		static void Utils::find_all_dll_files(const string& path_expr_to_find, bool& file_found, vector<DLLData>& players, string dir_path);
 		static bool Utils::get_directory_and_cmd_line_args(int argc, char *argv[], string& dir_path);
 		static pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir);
 		static const int DEFAULT_PRINT_DELAY = 2000;

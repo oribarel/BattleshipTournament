@@ -3,21 +3,51 @@
 #include <iso646.h>
 #include <direct.h>
 #include <map>
+#include "TournamentManager.h"
 
 using namespace std;
 
 
 
-//GameManager::GameManager(GameManager& other)
-//{s
-//	DEBUG("Oh no! copy ctor of GameManager was called!");
-//}
+GameManager::GameManager(gameEntry ge, const TournamentManager& tm) :
+	currPlayerInx(0),
+	numOfPlayers(2),
+	brd(Board(tm.getBoard(ge.board_inx).brd))
+{
+	players[PLAYER_A].score = 0;
+	players[PLAYER_B].score = 0;
 
-//GameManager& GameManager::operator=(GameManager& other) const
-//{
-//	DEBUG("Oh no, operator= of GameManager was used!");
-//	return other;
-//}
+	players[PLAYER_A].id = PLAYER_A;
+	players[PLAYER_B].id = PLAYER_B;
+
+#ifdef _2D_
+	players[PLAYER_A].color = Utils::MAGNETA_COLOR;
+	players[PLAYER_B].color = Utils::GREEN_COLOR;
+#endif
+
+	players[PLAYER_A].algo = unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first).algo_func());
+	players[PLAYER_B].algo = unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second).algo_func());
+}
+
+
+pair<int, int> GameManager::runGame() const
+{
+	//-- set players
+	players[PLAYER_A].algo->setPlayer(PLAYER_A);
+	players[PLAYER_B].algo->setPlayer(PLAYER_B);
+
+	//-- set boards
+	Board aBrd(brd);
+	Board bBrd(brd);
+	getBoardOfPlayer(PLAYER_A, aBrd);
+	getBoardOfPlayer(PLAYER_B, bBrd);
+	players[PLAYER_A].algo->setBoard(aBrd);
+	players[PLAYER_B].algo->setBoard(bBrd);
+
+	//-- run game
+
+	return pair<int, int>(1, 0);
+}
 
 
 bool GameManager::initialize_board(string file_board)
@@ -104,7 +134,7 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 		std::cout << "Cannot load dll: " << full_path << std::endl;
 		return false;
 	}
-	players[player_id].algo = getFunc();
+	players[player_id].algo = unique_ptr<IBattleshipGameAlgo>(getFunc());
 	Board board = Board(brd.rows(), brd.cols(), brd.depth());
 	getBoardOfPlayer(player_id, board);
 	players[player_id].algo->setBoard(board);
@@ -197,37 +227,30 @@ bool GameManager::initialize(int argc, char *argv[])
 }
 
 
-GameManager::GameManager() : currPlayerInx(0),
-numOfPlayers(number_of_players), brd(Board())
-{
-	PlayerData player1;
-	PlayerData player2;
+//GameManager::GameManager() : currPlayerInx(0),
+//numOfPlayers(number_of_players), brd(Board())
+//{
+//	PlayerData player1;
+//	PlayerData player2;
+//
+//	player1.score = 0;
+//	player2.score = 0;
+//
+//	player1.id = 'A';
+//	player2.id = 'B';
+//
+//	player1.algo = nullptr;
+//	player2.algo = nullptr;
+//
+//	#ifdef _2D_
+//		player1.color = Utils::MAGNETA_COLOR;
+//		player2.color = Utils::GREEN_COLOR;
+//	#endif
+//
+//	players[PLAYER_A] = player1;
+//	players[PLAYER_B] = player2;	
+//}
 
-	player1.score = 0;
-	player2.score = 0;
-
-	player1.id = 'A';
-	player2.id = 'B';
-
-	player1.algo = nullptr;
-	player2.algo = nullptr;
-
-	#ifdef _2D_
-		player1.color = Utils::MAGNETA_COLOR;
-		player2.color = Utils::GREEN_COLOR;
-	#endif
-
-	players[PLAYER_A] = player1;
-	players[PLAYER_B] = player2;	
-}
-
-GameManager::~GameManager()
-{
-	for(PlayerData player: players)
-	{
-		delete player.algo;
-	}
-}
 
 //user should be 'A' or 'B'
 int GameManager::numOfValidShips(char user) const
@@ -502,7 +525,7 @@ Ship *GameManager::getShipAtCrd(Coordinate c)
 
 
 // the board that is alocated here should be freed
-Board GameManager::getBoardOfPlayer(int player_id, Board& board) const
+void GameManager::getBoardOfPlayer(int player_id, Board& board) const
 {
 	const int rows = brd.rows();
 	const int cols = brd.cols();
@@ -522,7 +545,7 @@ Board GameManager::getBoardOfPlayer(int player_id, Board& board) const
 			}
 		}		
 	}
-	return board;
+
 
 
 }

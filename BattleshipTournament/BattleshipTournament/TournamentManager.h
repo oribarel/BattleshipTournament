@@ -35,20 +35,22 @@ private:
 class TournamentManager
 {
 public:
-    TournamentManager(int numOfThreads, vector<pair<GetAlgoFunc, string>>& functions, vector<Board>& boards);
+    TournamentManager(int numOfThreads, vector<DLLData>& functions, vector<BoardFullData>& boards);
     void runTournament();
     void runNextRound(vector<gameEntry>& roundGames);
-    bool tournamentOver();
+    bool tournamentOver() const;
     void displayScores_tournamentEnd();
     void runGame(gameEntry ge);
-    const pair<GetAlgoFunc, string> getAlgo(int inx) const;
-    const Board& getBoard(int inx) const;
+    const DLLData& getAlgo(int inx) const;
+    const BoardFullData& getBoard(int inx) const;
 
 protected:
     ScoreBoard score_board;                                ///< score board
     Scheduler scheduler;                                   ///< tournament scheduler
-    vector<Board> boards;                                  ///< boards of tournament
-    vector<pair<GetAlgoFunc, string>> get_algos_vector;    ///< functions to algo instance making
+    //vector<Board> boards;                                  ///< boards of tournament
+	vector<BoardFullData> boards;                                  ///< boards of tournament
+    //vector<pair<GetAlgoFunc, string>> get_algos_vector;    ///< functions to algo instance making
+	vector<DLLData> get_algos_vector;					   ///< functions to algo instance making
     mutex get_algos_lock;                                  ///< no cuncurrent algo instance making (underlying impl might fail)
     ThreadPool pool;                                       ///< ThreadPool
     ThreadPool reporter;                                   ///< reporter

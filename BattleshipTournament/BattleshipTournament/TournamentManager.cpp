@@ -6,11 +6,11 @@
 
 //-- ctor
 TournamentManager::TournamentManager(
-    int numOfThreads, vector<pair<GetAlgoFunc, string>>& functions_and_names, vector<Board>& boards) :
-score_board(ScoreBoard(static_cast<unsigned int>(functions_and_names.size()))),
-scheduler(Scheduler(static_cast<unsigned int>(functions_and_names.size()), static_cast<unsigned int>(boards.size()))),
+	int numOfThreads, vector<DLLData>& functions, vector<BoardFullData>& boards) :
+score_board(ScoreBoard(static_cast<unsigned int>(functions.size()))),
+scheduler(Scheduler(static_cast<unsigned int>(functions.size()), static_cast<unsigned int>(boards.size()))),
 boards(boards),
-get_algos_vector(functions_and_names),
+get_algos_vector(functions),
 pool(ThreadPool(numOfThreads)),
 reporter(ThreadPool(1))
 {}
@@ -56,7 +56,7 @@ void TournamentManager::displayScores_tournamentEnd()
     cout << "Tournament Ended" << endl;
 }
 
-bool TournamentManager::tournamentOver()
+bool TournamentManager::tournamentOver() const
 {
     return (scheduler.getNumOfAllBoardRotations() > 1);
 }
@@ -65,12 +65,12 @@ bool TournamentManager::tournamentOver()
 ///    getters      ////
 ////////////////////////
 
-const pair<GetAlgoFunc, string> TournamentManager::getAlgo(int inx) const
+const DLLData& TournamentManager::getAlgo(int inx) const
 {
     return get_algos_vector[inx];
 }
 
-const Board& TournamentManager::getBoard(int inx) const
+const BoardFullData& TournamentManager::getBoard(int inx) const
 {
     return boards[inx];
 }
@@ -82,13 +82,13 @@ const Board& TournamentManager::getBoard(int inx) const
 
 // CTOR
 Scheduler::Scheduler(int numOfPlayers, int numOfBoards) : 
-    scheduling(vector<int>(numOfPlayers, -1)),
     numOfPlayers(numOfPlayers),    
     numOfBoards(numOfBoards),
     currBoard(0),
     num_of_times_passed_all_boards(0)
 {
     auto schedulingEntries = ((numOfPlayers + 1) / 2) * 2;
+	scheduling = vector<int>(schedulingEntries, -1);
     for (int i = 0; i < schedulingEntries; i++)
     {
         scheduling[i] = i;

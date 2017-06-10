@@ -38,9 +38,9 @@ void ScoreBoard::update(gameEntry& ge, pair<int, int> scores)
     gameHistory gh1(scores.first, scores.second);
     gameHistory gh2(scores.second, scores.first);
 
-    entries[ge.players_indices.first].history.push_front(gh1);
+    entries[ge.players_indices.first].history.push_back(gh1);
     entries[ge.players_indices.first].history_len++;
-    entries[ge.players_indices.second].history.push_front(gh2);
+    entries[ge.players_indices.second].history.push_back(gh2);
     entries[ge.players_indices.second].history_len++;
 
     int min_history_len = common_history_length();

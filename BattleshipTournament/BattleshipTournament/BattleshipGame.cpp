@@ -1,9 +1,7 @@
 // BattleshipGame.cpp : Defines the entry point for the console application.
 //
 #include "BoardClass.h"
-#include "IBattleshipGameAlgo.h"
-
-
+#include "TournamentManager.h"
 #include "GameManager.h"
 
 
@@ -19,21 +17,13 @@ int main(int argc, char *argv[])
 		return -1;
 	if (!Utils::get_dlls(dir_path, dlls))
 		return -1;
-	GameManager manager;
+	
+	//-- number of threads
+	auto numOfThreads = 4; //todo
 
-	/* The following line does:
-	 *  - finds files
-	 *  - checks board validity
-	 *  - manager finds the players' ships
-	 *  - manager initializes players
-	 */
-	bool success = manager.initialize(argc, argv);
-	if (!success)
-		return -1;
-
-
-	manager.mainLoop();
-
+	//-- create tournament
+	TournamentManager tm(numOfThreads, dlls, boards);
+	tm.runTournament();
 	return 0;
 }
 
