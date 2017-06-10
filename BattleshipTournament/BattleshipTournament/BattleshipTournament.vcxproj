@@ -116,6 +116,7 @@
     <ClInclude Include="IBattleshipGameAlgo.h" />
     <ClInclude Include="ScoreBoard.h" />
     <ClInclude Include="Ship.h" />
+    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="TournamentManager.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
@@ -125,6 +126,7 @@
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="ScoreBoard.cpp" />
     <ClCompile Include="Ship.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="TournamentManager.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>

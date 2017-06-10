@@ -1,37 +1,11 @@
 #pragma once
 #include "BoardClass.h"
-#include <thread>
 #include <mutex>
 #include <queue>
-#include <functional>
 #include "ScoreBoard.h"
+#include "ThreadPool.h"
 
 typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
-
-/*************************
- *      ThreadPool       *
- *************************/
-class ThreadPool
-{
-    /*
-     * example ThreadPool: https://stackoverflow.com/a/29742586
-     */
-public:
-    ThreadPool(int threads);
-    ThreadPool(ThreadPool &other);
-    ~ThreadPool();
-    void doJob(function <void(void)> func);
-    void terminationDetection();
-
-protected:
-    void threadEntry(int i);
-
-    mutex lock_;
-    condition_variable condVar_;
-    bool shutdown_;
-    queue <function <void(void)>> jobs_;
-    vector <thread> threads_;
-};
 
 /****************************
 *      Scheduler            *
@@ -44,7 +18,7 @@ public:
     void scheduleNextRound(vector<gameEntry>& roundGames);
     void updateSchedulingVector();
     bool completedBoard();
-    int getNumOfAllBoardRotations();
+    int getNumOfAllBoardRotations() const;
 
 private:
     vector<int> scheduling;
@@ -65,7 +39,6 @@ public:
     void runTournament();
     void runNextRound(vector<gameEntry>& roundGames);
     bool tournamentOver();
-    void displayScores() const;
     void displayScores_tournamentEnd();
     void runGame(gameEntry ge);
     const GetAlgoFunc& getAlgo(int inx) const;

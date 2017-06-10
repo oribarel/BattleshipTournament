@@ -1,11 +1,13 @@
 #pragma once
 #include <vector>
+#include <list>
 
 using namespace std;
 
-/*************************
-*      gameEntry         *
-*************************/
+///////////////////////////
+///      gameEntry      
+///   GameManager input
+///////////////////////////
 
 struct gameEntry
 {
@@ -20,25 +22,64 @@ struct gameEntry
     {}
 };
 
+
+//////////////////////////////
+///       gameHistory
+/// log game results with
+/// a vector of these
+/////////////////////////////
+
+struct gameHistory
+{
+    int win;
+    int loss;
+    int pts_for;
+    int pts_against;
+
+    gameHistory(int pts_for, int pts_against) :
+        pts_for(pts_for),
+        pts_against(pts_against),
+        win(static_cast<int>(pts_for > pts_against)),
+        loss(static_cast<int>(pts_for < pts_against)){}
+
+    double gameHistory::precentage() const;
+    static bool compare(const gameHistory first, const gameHistory second);
+
+};
+
+
+//////////////////////////////////
+///       ScoreBoardEntry
+/// represents the state of 
+/// the algo in the tournament
+//////////////////////////////////
+
 struct ScoreBoardEntry
 {
     int algoID;
-    vector<int> played_A_player_against;
+    // todo algo name
+    int history_len;
+    list<gameHistory> history;
 
-    int wins;
-    int losses;
-    int ptsFor;
-    int ptsAgainst;
-
-    double precentage();
-    ScoreBoardEntry(int algoID);
+    ScoreBoardEntry(int algoID) :
+        algoID(algoID),
+        history_len(0),
+        history(list<gameHistory>()) {}
 };
+
+
+//////////////////////////////
+///       ScoreBoard
+/// represents the state of 
+/// the tournament
+///////////////////////////////
 
 class ScoreBoard
 {
 public:
     ScoreBoard(int numPlayers);
     void update(gameEntry& ge, pair<int, int> scores);
+    void displayScores() const;
 private:
     int numOfPlayers;
     vector<ScoreBoardEntry> entries;
