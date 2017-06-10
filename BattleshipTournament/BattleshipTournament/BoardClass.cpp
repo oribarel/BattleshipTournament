@@ -151,13 +151,6 @@ bool Board::SetBoardFromFile(const char* path)
 
 //dtor
 Board::~Board() = default;
-/* OBSOLETE */
-//dtor
-/*Board::~Board()
-{
-	DEBUG("Board dtor activated");
-	delete[] data_;
-}*/
 
 //copy ctor
 Board::Board(const Board &brd) : data_(make_unique<char[]>(brd._rows * brd._cols * brd._depth))

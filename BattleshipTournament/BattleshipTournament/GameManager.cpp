@@ -6,20 +6,7 @@
 
 using namespace std;
 
-
-
-//GameManager::GameManager(GameManager& other)
-//{
-//	DEBUG("Oh no! copy ctor of GameManager was called!");
-//}
-
-//GameManager& GameManager::operator=(GameManager& other) const
-//{
-//	DEBUG("Oh no, operator= of GameManager was used!");
-//	return other;
-//}
-
-
+//-- move from this file
 bool GameManager::initialize_board(string file_board)
 {
 	bool set_boards_sucess = true;
@@ -52,14 +39,7 @@ bool GameManager::initialize_board(string file_board)
 	return true;
 }
 
-/* OBSOLETE */
-/*void GameManager::free_board(const char** board) const
-{
-	for (int i = 0; i < brd.rows(); i++)
-		delete[] board[i];
-	delete[] board;
-}*/
-
+//-- move from this file
 bool GameManager::find_dll(string dir_path, int player_id, string& dll)
 {
 	string path = dir_path;
@@ -76,6 +56,7 @@ bool GameManager::find_dll(string dir_path, int player_id, string& dll)
 	return true;
 }
 
+//-- move from this file
 bool GameManager::initialize_player(string dir_path, int player_id)
 {
 
@@ -107,7 +88,7 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 		std::cout << "Cannot load dll: " << full_path << std::endl;
 		return false;
 	}
-	players[player_id].algo = getFunc();
+	players[player_id].algo = unique_ptr<IBattleshipGameAlgo>(getFunc());
 	auto board = getBoardOfPlayer(player_id);
 	players[player_id].algo->setBoard(*board);
 	/* TODO: check this */
@@ -124,12 +105,14 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 	return retVal;
 }
 
+//-- unnecessary
 bool GameManager::initialize_players(string dir_path)
 {
 	return initialize_player(dir_path, PLAYER_A) and initialize_player(dir_path, PLAYER_B);
 }
 
 
+//-- obsolete
 pair<bool, string> GameManager::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir)
 {
 	string dir_path = ".";
@@ -162,6 +145,8 @@ pair<bool, string> GameManager::parse_command_line_arguments(int argc, char *arg
 	}
 	return make_pair(true, dir_path);
 }
+
+//-- move from this file and adapt to new exercise
 bool GameManager::initialize(int argc, char *argv[])
 {
 	bool find_board = false, find_a = false, find_b = false, is_working_dir = false, find_path = true;
@@ -203,35 +188,36 @@ bool GameManager::initialize(int argc, char *argv[])
 	return false;
 }
 
-
-GameManager::GameManager() : currPlayerInx(0),
-numOfPlayers(number_of_players), brd(Board())
+GameManager::GameManager(gameEntry ge, const TournamentManager& tm) : 
+currPlayerInx(0),
+numOfPlayers(2),
+brd(Board(tm.getBoard(ge.board_inx)))
 {
-	PlayerData player1;
-	PlayerData player2;
+    players[PLAYER_A].score = 0;
+    players[PLAYER_B].score = 0;
 
-	player1.score = 0;
-	player2.score = 0;
+    players[PLAYER_A].id = 'A';
+    players[PLAYER_B].id = 'B';
 
-	player1.id = 'A';
-	player2.id = 'B';
-
-	player1.algo = nullptr;
-	player2.algo = nullptr;
-
-	//player1.color = Utils::MAGNETA_COLOR;
-	//player2.color = Utils::GREEN_COLOR;
-
-	players[PLAYER_A] = player1;
-	players[PLAYER_B] = player2;	
-}
-
-GameManager::~GameManager()
-{
-	for(PlayerData player: players)
-	{
-		delete player.algo;
-	}
+    bool first_smaller = (ge.players_indices.first < ge.players_indices.second);
+    if (ge.A_is_smaller_B_is_larger)
+    {
+        players[PLAYER_A].algo = (first_smaller) ? 
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)());
+        players[PLAYER_B].algo = (first_smaller) ?
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)());
+    }
+    else
+    {
+        players[PLAYER_A].algo = (first_smaller) ?
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)());
+        players[PLAYER_B].algo = (first_smaller) ?
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)());
+    }
 }
 
 //user should be 'A' or 'B'
@@ -386,6 +372,12 @@ void GameManager::notify_players(int currPlayerInx, Coordinate attack, const Shi
 		players[PLAYER_A].algo->notifyOnAttackResult(currPlayerInx, attack, AttackResult::Miss);
 		players[PLAYER_B].algo->notifyOnAttackResult(currPlayerInx, attack, AttackResult::Miss);
 	}
+}
+
+pair<int, int> GameManager::runGame()
+{
+    //todo: implement
+    return pair<int, int>(1, 0);
 }
 
 void GameManager::mainLoopEndOfGamePrint() const

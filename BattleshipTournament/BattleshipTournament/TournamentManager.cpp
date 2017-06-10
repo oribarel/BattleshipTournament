@@ -29,8 +29,6 @@ ThreadPool::~ThreadPool()
         thread.join();
 }
 
-
-
 void ThreadPool::doJob(function <void(void)> func)
 {
     // Place a job on the queue and unblock a thread
@@ -88,11 +86,11 @@ void ThreadPool::terminationDetection()
 
 
 TournamentManager::TournamentManager(
-    int numOfThreads) :
+    int numOfThreads, vector<GetAlgoFunc>& functions, vector<Board>& boards) :
     score_board(ScoreBoard(2)),             ///< todo
     scheduler(Scheduler(2, 4)),             ///< todo
-    boards(vector<Board>()),
-    get_algos_vector(vector<GetAlgoFunc>()),
+    boards(boards),
+    get_algos_vector(functions),
     pool(ThreadPool(numOfThreads))
 {
 }
@@ -111,44 +109,33 @@ void TournamentManager::runTournament()
 
 void TournamentManager::runGame(gameEntry ge)
 {
-    GameManager gm;
+    ////////////////////////////
+    ///  create algos one-by-one
+    ////////////////////////////
     get_algos_lock.lock();
-    auto algo1 = unique_ptr<IBattleshipGameAlgo>(get_algos_vector[ge.players_indices.first]());
-    auto algo2 = unique_ptr<IBattleshipGameAlgo>(get_algos_vector[ge.players_indices.second]());
+    GameManager gm(ge, *this);
     get_algos_lock.unlock();
 
-    //run game...
-    bool first_smaller = (ge.players_indices.first < ge.players_indices.second);
-    if(ge.A_is_smaller_B_is_larger)
-    {
-        if (first_smaller)
-        {
-            //runGame with A_player=algo1, B_player=algo2
-        }
-        else
-        {
-            //runGame with A_player=algo2, B_player=algo1
-        }
-    }
-    else
-    {
-        if (first_smaller)
-        {
-            //runGame with A_player=algo2, B_player=algo1
-        }
-        else
-        {
-            //runGame with A_player=algo1, B_player=algo2
-        }
-    }
+    pair<int,int> scores = gm.runGame();
+    score_board.update(ge, scores);
+    //todo: scoreboard update
+}
+
+const GetAlgoFunc& TournamentManager::getAlgo(int inx) const
+{
+    return get_algos_vector[inx];
+}
+
+const Board& TournamentManager::getBoard(int inx) const
+{
+    return boards[inx];
 }
 
 void TournamentManager::runNextRound(vector<gameEntry>& roundGames)
 {
     for (const auto& game : roundGames)
     {
-        auto copyGE = gameEntry(game);
-        pool.doJob(bind(&TournamentManager::runGame, this, copyGE));
+        pool.doJob(bind(&TournamentManager::runGame, this, game));
     }
     pool.terminationDetection();
 }
@@ -160,6 +147,7 @@ void TournamentManager::displayScores() const
 
 void TournamentManager::displayScores_tournamentEnd()
 {
+    cout << "Tournament Ended" << endl;
 }
 
 /* example for using ThreadPool*/

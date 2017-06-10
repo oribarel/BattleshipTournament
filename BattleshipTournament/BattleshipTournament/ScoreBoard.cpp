@@ -21,3 +21,26 @@ ScoreBoard::ScoreBoard(int numPlayers) :
     entries(vector<ScoreBoardEntry>())
 {
 }
+
+//-- todo: fix ordering issue
+void ScoreBoard::update(gameEntry & ge, pair<int, int> scores)
+{
+    if (scores.first != scores.second)
+    {
+        if (scores.first > scores.second)
+        {
+            entries[ge.players_indices.first].wins += 1;
+            entries[ge.players_indices.second].losses += 1;
+        }
+        else
+        {
+            entries[ge.players_indices.second].wins += 1;
+            entries[ge.players_indices.first].losses += 1;
+        }
+    }
+    entries[ge.players_indices.first].ptsFor += scores.first;
+    entries[ge.players_indices.first].ptsAgainst += scores.second;
+
+    entries[ge.players_indices.second].ptsFor += scores.second;
+    entries[ge.players_indices.second].ptsAgainst += scores.first;
+}

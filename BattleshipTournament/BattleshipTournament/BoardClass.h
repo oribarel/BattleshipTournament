@@ -7,7 +7,7 @@
 
 using namespace std;
 
-std::istream& safeGetline(std::istream& is, std::string& t);
+istream& safeGetline(istream& is, string& t);
 
 class Board : public BoardData
 {
@@ -28,44 +28,42 @@ public:
 	static const int DEFAULT_BOARD_WIDTH = 10;
 
 	Board() : Board(DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_WIDTH) {}
+	Board::Board(int rows, int columns, int depth);//non-default
+	Board(const Board&); //copy ctor
+	~Board();
 	
 	
 	//-- inherited methods
 	char charAt(Coordinate c) const override;
 	
-	//empty constructor
-	Board::Board(int rows, int columns, int depth);//non-default
 	void readDimensionsFromFile(bool& is_valid, std::string line);
-	//Board::Board(const char** board, int rows, int columns, int depth); //non-default2
-	Board(const Board&); //copy ctor
 	Board& operator=(const Board&);
 	char operator()(Coordinate crd) const;
-	//friend std::ostream& operator<<(std::ostream &strm, const Board &brd);
-	~Board();
-	static void Board::revealSurroundings(int row, int col, int depth, char ship_char, Board &board, vector<Coordinate> &coords);
-	static void Board::revealSurroundings(Coordinate c, char ship_char, Board &board, vector<Coordinate> &coords);
-	void Board::findShips(int player_id, vector<Ship>& ships) const;
+	static void revealSurroundings(int row, int col, int depth, char ship_char, Board &board, vector<Coordinate> &coords);
+	static void revealSurroundings(Coordinate c, char ship_char, Board &board, vector<Coordinate> &coords);
+	void findShips(int player_id, vector<Ship>& ships) const;
 
-	bool Board::isInBoard(Coordinate c) const;
-	bool Board::isInBoard(int row, int col, int depth) const;
+	bool isInBoard(Coordinate c) const;
+	bool isInBoard(int row, int col, int depth) const;
 
 	static bool isLegalBoardElement(char c);
-	static bool Board::isUserShip(int user_id, char marineObject);
+	static bool isUserShip(int user_id, char marineObject);
 	static bool isAShip(char marineObject);
 	static bool isBShip(char marineObject);
 
-	void Board::setSlot(Coordinate c, char marineObject);
+	void setSlot(Coordinate c, char marineObject);
 	bool SetBoardFromFile(const char* path);
 
 
 
 	//pair<int, int> Board::getNextCoord(int row, int col) const;
 
-	int Board::coordToDataIndex(Coordinate c) const;
-	int Board::coordToDataIndex(int row, int col, int depth) const;
+	int coordToDataIndex(Coordinate c) const;
+	int coordToDataIndex(int row, int col, int depth) const;
 
 
 private:
+    //todo: change to char vector
 	unique_ptr<char[]>  data_;
 
 };

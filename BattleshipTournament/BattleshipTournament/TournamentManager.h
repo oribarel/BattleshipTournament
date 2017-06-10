@@ -9,24 +9,6 @@
 typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
 
 /*************************
-*      gameEntry         *
-*************************/
-
-struct gameEntry
-{
-    pair<int, int> players_indices;
-    int board_inx;
-    bool A_is_smaller_B_is_larger;
-
-    gameEntry(int inx1, int inx2, int brdinx, bool a_is_smaller_b_is_larger) :
-        players_indices(pair<int, int>(inx1, inx2)),
-        board_inx(brdinx),
-        A_is_smaller_B_is_larger(a_is_smaller_b_is_larger)
-    {}
-};
-
-
-/*************************
  *      ThreadPool       *
  *************************/
 class ThreadPool
@@ -79,13 +61,15 @@ private:
 class TournamentManager
 {
 public:
-    TournamentManager(int numOfThreads);
+    TournamentManager(int numOfThreads, vector<GetAlgoFunc>& functions, vector<Board>& boards);
     void runTournament();
     void runNextRound(vector<gameEntry>& roundGames);
     bool tournamentOver();
     void displayScores() const;
     void displayScores_tournamentEnd();
     void runGame(gameEntry ge);
+    const GetAlgoFunc& getAlgo(int inx) const;
+    const Board& getBoard(int inx) const;
 
 protected:
     ScoreBoard score_board;                  ///< score board
