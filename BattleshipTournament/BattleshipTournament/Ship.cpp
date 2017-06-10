@@ -252,17 +252,17 @@ bool Ship::getValid() const
 
 bool Ship::isAdjacentCoordinates(Coordinate c1, Coordinate c2)
 {
-	if (c1.row == c2.row and c1.col == c1. col and  c1.depth == c2.depth - 1)
+	if (c1.row == c2.row and c1.col == c2.col and  c1.depth == c2.depth - 1)
 		return true;
-	if (c1.row == c2.row and c1.col == c1.col and  c1.depth == c2.depth + 1)
+	if (c1.row == c2.row and c1.col == c2.col and  c1.depth == c2.depth + 1)
 		return true;
-	if (c1.row == c2.row and c1.col == c1.col -1 and  c1.depth == c2.depth)
+	if (c1.row == c2.row and c1.col == c2.col -1 and  c1.depth == c2.depth)
 		return true;
-	if (c1.row == c2.row and c1.col == c1.col + 1 and c1.depth == c2.depth)
+	if (c1.row == c2.row and c1.col == c2.col + 1 and c1.depth == c2.depth)
 		return true;	
-	if (c1.row == c2.row - 1 and c1.col == c1.col and c1.depth == c2.depth)
+	if (c1.row == c2.row - 1 and c1.col == c2.col and c1.depth == c2.depth)
 		return true;
-	if (c1.row == c2.row + 1 and c1.col == c1.col and c1.depth == c2.depth)
+	if (c1.row == c2.row + 1 and c1.col == c2.col and c1.depth == c2.depth)
 		return true;
 	return false;
 }

@@ -3,39 +3,39 @@
 #include "BoardClass.h"
 #include "IBattleshipGameAlgo.h"
 #include "Utils.h"
-#include <set>
+
 using namespace std;
+
+typedef Coordinate Crd;
 
 class HeatMap
 {
 public:
-    HeatMap() : HeatMap(Board::DEFAULT_BOARD_WIDTH, Board::DEFAULT_BOARD_WIDTH) {}//empty constructor
-    HeatMap(int rows, int columns); //non-default
-    HeatMap(const Board&); //non-default 2
+    HeatMap() : HeatMap(Board::DEFAULT_BOARD_WIDTH, Board::DEFAULT_BOARD_WIDTH, Board::DEFAULT_BOARD_WIDTH) {}//empty constructor
+    HeatMap(int rows, int columns, int depth); //non-default
+    HeatMap(const BoardData&); //non-default 2
     HeatMap(const HeatMap& map); //copy ctor
 
     HeatMap& operator=(const HeatMap&);
-    int operator()(int, int) const;
-    int operator()(pair<int, int> crd) const;
+    int operator()(Coordinate crd) const;
+    void setCoord(Coordinate crd, int newVal);
+    void coordPlusX(Coordinate crd, int X);
 
-    void setCoord(int row, int col, int newVal);
-    void setCoord(pair<int, int> crd, int newVal);
-    void coordPlusX(int row, int col, int X);
-    void coordPlusX(pair<int, int> crd, int X);
 
     int getNumRows() const;
     int getNumCols() const;
+    int getNumOfDepthLayers() const;
     //friend std::ostream& operator<<(std::ostream &strm, const HeatMap &brd);
     ~HeatMap();
     int getMaxHeat() const;
-    pair<int,int> getMaxHeatCoord() const;
-    pair<int,int> getMaxHeatCoord_destroy() const;
-    void reveal(const pair<int, int>& crd, vector<pair<int, int>>& revealed);
+    void getMaxHeatCoord(Crd& crd) const;
+    void HeatMap::reveal(Coordinate crd, vector<Coordinate> &revealed);
 
 private:
     int rows_;
     int columns_;
-    int *data_;
+    int depth_;
+    vector<int> data_;
 };
 
 
@@ -55,10 +55,10 @@ public:
      *      API     *
      ****************/
 
-    bool init(const std::string& path) override; 
-    void setBoard(int player, const char** board, int numRows, int numCols) override;
-    std::pair<int, int> attack() override;
-    void notifyOnAttackResult(int player, int row, int col, AttackResult result) override; // notify on last move result
+    void setPlayer(int player) override;
+    void setBoard(const BoardData& board) override;
+    Coordinate attack() override;
+    void notifyOnAttackResult(int player, Coordinate crd, AttackResult result) override; // notify on last move result
 
 private:
 
@@ -66,38 +66,40 @@ private:
     *    Queries       *
     *******************/
 
-    bool myShipAt(int row, int col) const;
-    bool crdHelpsMeInDestroyMode(pair<int, int>& coord) const;
-    void turn_sunk_ship_to_obstacle(vector<pair<int, int>> sunkShipCoords);
+    bool myShipAt(Coordinate crd) const;
+    bool crdHelpsMeInDestroyMode(Coordinate crd) const;
+    void turn_sunk_ship_to_obstacle(vector<Coordinate> sunkShipCoords);
 
     /*******************
     *    Functions     *
     *******************/
-    void notifyAttackMiss(int row, int col);
-    void notifyAttackHit(int row, int col);
+    void notifyAttackMiss(        Coordinate crd);
+    void notifyAttackHit(         Coordinate crd);
+    void notifyAttackSink(        Coordinate crd);
+    void notifyOpponentAttackHit( Coordinate crd);
+    void notifyOpponentAttackSink(Coordinate crd);
 
     void initDestroyModeRightAfterSink();
 
-    void notifyAttackSink(int row, int col);
-    void notifyOpponentAttackHit(int row, int col);
-    void notifyOpponentAttackSink(int row, int col);
 
+    void constructBoardFromBoardData(const BoardData& board_data);
     void initObstacles();
-    void seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, int i, int j) const;
+    void seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, Coordinate crd) const;
     HeatMap computeSeekHeat() const;
-    pair<int, int> findTopLeftDestroySessionCoord() const;
-    void computeDestroyHeatAllOptions(HeatMap& heat_map, bool isHoriz) const;
-    bool isDestroySessionHorizontal() const;
+    Coordinate findTopNorthWestrenDestroySessionCoord() const;
+    void Battleship_MAP_player::computeDestroyHeatAllOptions(HeatMap& heat_map, Crd orientation) const;
+    Crd Battleship_MAP_player::destroySessionOrientation() const;
     HeatMap computeDestroyHeat() const;
 
     int player_;
     Board brd;
     vector<Ship> ships;
+	vector<int> enemy_ships_left;
 
     HeatMap obstacles; //in this heatmap 1 means obstacle and 0 means possible
     bool isSeek; // true == SeekMode, false == DestroyMode
     //HeatMap heatmap;
-    vector<pair<int, int>> destroySession;
+    vector<Coordinate> destroySession;
     HeatMap uncompleteHitSpots;
 };
 

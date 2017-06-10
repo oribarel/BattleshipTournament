@@ -8,23 +8,25 @@ using namespace std;
 
 
 
-GameManager::GameManager(GameManager& other)
-{
-	DEBUG("Oh no! copy ctor of GameManager was called!");
-}
+//GameManager::GameManager(GameManager& other)
+//{s
+//	DEBUG("Oh no! copy ctor of GameManager was called!");
+//}
 
-GameManager& GameManager::operator=(GameManager& other) const
-{
-	DEBUG("Oh no, operator= of GameManager was used!");
-	return other;
-}
+//GameManager& GameManager::operator=(GameManager& other) const
+//{
+//	DEBUG("Oh no, operator= of GameManager was used!");
+//	return other;
+//}
 
 
 bool GameManager::initialize_board(string file_board)
 {
 	bool set_boards_sucess = true;
 	//clear terminal
-	//system("cls");
+	#ifdef _2D_
+		system("cls");
+	#endif
 	// set board using file
 	set_boards_sucess = brd.SetBoardFromFile((file_board).c_str());
 	if (!set_boards_sucess)
@@ -33,8 +35,10 @@ bool GameManager::initialize_board(string file_board)
 		return false;
 	}
 	//DEBUG(*brd);
-	//if (!Utils::get_quiet())
-	//	cout << brd << endl;
+	#ifdef _2D_
+		if (!Utils::get_quiet())
+			cout << brd << endl;
+	#endif
 
 	// find ships
 	this->brd.findShips(PLAYER_A, players[PLAYER_A].ships);
@@ -52,13 +56,6 @@ bool GameManager::initialize_board(string file_board)
 	return true;
 }
 
-/* OBSOLETE */
-/*void GameManager::free_board(const char** board) const
-{
-	for (int i = 0; i < brd.rows(); i++)
-		delete[] board[i];
-	delete[] board;
-}*/
 
 bool GameManager::find_dll(string dir_path, int player_id, string& dll)
 {
@@ -108,8 +105,9 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 		return false;
 	}
 	players[player_id].algo = getFunc();
-	auto board = getBoardOfPlayer(player_id);
-	players[player_id].algo->setBoard(*board);
+	Board board = Board(brd.rows(), brd.cols(), brd.depth());
+	getBoardOfPlayer(player_id, board);
+	players[player_id].algo->setBoard(board);
 	/* TODO: check this */
 	players[player_id].algo->setPlayer(player_id);
 	if (!retVal)
@@ -117,10 +115,6 @@ bool GameManager::initialize_player(string dir_path, int player_id)
 		std::cout << "Algorithm initialization failed for dll: " << full_path << std::endl;
 		return false;
 	}
-
-	// cleanup
-	//free_board(board);
-
 	return retVal;
 }
 
@@ -165,7 +159,7 @@ pair<bool, string> GameManager::parse_command_line_arguments(int argc, char *arg
 bool GameManager::initialize(int argc, char *argv[])
 {
 	bool find_board = false, find_a = false, find_b = false, is_working_dir = false, find_path = true;
-	string dir_path = ".", file_board, file_a, file_b, find_file_ret_val;
+	string dir_path, file_board, file_a, file_b, find_file_ret_val;
 	pair<bool, string> parser_ret_val = parse_command_line_arguments(argc, argv, is_working_dir);
 	char cCurrentPath[FILENAME_MAX];
 	if (!_getcwd(cCurrentPath, sizeof(cCurrentPath)))
@@ -175,7 +169,6 @@ bool GameManager::initialize(int argc, char *argv[])
 
 	}
 	cCurrentPath[sizeof(cCurrentPath) - 1] = '\0'; /* not really required */
-	dir_path = parser_ret_val.second;
 	dir_path = is_working_dir ? string(cCurrentPath) : string(argv[1]);
 	if (parser_ret_val.first == false)
 		return false;
@@ -219,8 +212,10 @@ numOfPlayers(number_of_players), brd(Board())
 	player1.algo = nullptr;
 	player2.algo = nullptr;
 
-	//player1.color = Utils::MAGNETA_COLOR;
-	//player2.color = Utils::GREEN_COLOR;
+	#ifdef _2D_
+		player1.color = Utils::MAGNETA_COLOR;
+		player2.color = Utils::GREEN_COLOR;
+	#endif
 
 	players[PLAYER_A] = player1;
 	players[PLAYER_B] = player2;	
@@ -335,7 +330,10 @@ bool GameManager::isValidBoard() const
 	// validate no adjacent ships
 	is_valid &= validate_no_adjacent_ships();
 	// validate same quantities of ships
-	is_valid &= validate_same_ships_quantities();
+	if (!validate_same_ships_quantities())
+	{
+		//TODO: print to log
+	}
 	return is_valid;
 }
 
@@ -362,17 +360,16 @@ bool GameManager::allSunk(const vector<Ship>& ships)
 }
 
 /* OBSOLETE */
-/*void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color)
+#ifdef _2d_
+void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color)
 {
 	Board& board = brd;
-	COORD hit_coord;
-	hit_coord.Y = attack.row;
-	hit_coord.X = attack.col;
-	if (board(attack.row, attack.col) == Board::SEA)
-		Utils::updateBoardPrint(player_color, hit_coord, Board::SEA, hit_color);
+	if (board.charAt(attack) == Board::SEA)
+		Utils::updateBoardPrint(player_color, attack, Board::SEA, hit_color, brd.rows());
 	else
-		Utils::updateBoardPrint(player_color, hit_coord, Utils::HIT_SIGN, hit_color);
-}*/
+		Utils::updateBoardPrint(player_color, attack, Utils::HIT_SIGN, hit_color, brd.rows());
+}
+#endif
 
 void GameManager::notify_players(int currPlayerInx, Coordinate attack, const Ship *shipPtr, bool is_hit) const
 {
@@ -402,7 +399,9 @@ void GameManager::make_hit(int currPlayerInx, Coordinate attack, bool is_self_hi
 {
 	Ship *shipPtr = getShipAtCrd(attack); //player hits itself
 	shipPtr->hitAt(attack);
-	//update_board_print(players[currPlayerInx % 2].color, attack, is_self_hit ? players[currPlayerInx % 2].color: players[(currPlayerInx + 1) % 2].color); //update board print				
+	#ifdef _2D_
+		update_board_print(players[currPlayerInx % 2].color, attack, is_self_hit ? players[currPlayerInx % 2].color: players[(currPlayerInx + 1) % 2].color); //update board print				
+	#endif
 	if (shipPtr->isSunk()) //if ship sinks grant points to enemy
 	{
 		if (is_self_hit)
@@ -435,9 +434,11 @@ void GameManager::mainLoop()
 				break;
 			}
 			if (board.charAt(attack) == Board::SEA || getShipAtCrd(attack)->isSunk())
-			{	
-				//int hit_color = board.charAt(attack) == Board::SEA || getShipAtCrd(attack)->isAShip() ? players[PLAYER_A].color : players[PLAYER_B].color;
-				//update_board_print(players[(currPlayerInx) % 2].color, attack, hit_color); //update board print			
+			{
+				#ifdef _2D_
+					int hit_color = board.charAt(attack) == Board::SEA || getShipAtCrd(attack)->isAShip() ? players[PLAYER_A].color : players[PLAYER_B].color;
+					update_board_print(players[(currPlayerInx) % 2].color, attack, hit_color); //update board print			
+				#endif
 				notify_players(currPlayerInx, attack, nullptr, false); //notify players				
 				currPlayerInx = (currPlayerInx + 1) % 2; //nothing happens and the turn passes
 				break;
@@ -501,13 +502,12 @@ Ship *GameManager::getShipAtCrd(Coordinate c)
 
 
 // the board that is alocated here should be freed
-unique_ptr<Board> GameManager::getBoardOfPlayer(int player_id) const
+Board GameManager::getBoardOfPlayer(int player_id, Board& board) const
 {
 	const int rows = brd.rows();
 	const int cols = brd.cols();
 	const int depths = brd.depth();
 
-	unique_ptr<Board> boardP = make_unique<Board>(rows, cols, depths);
 	for (int row = 1; row <= rows; row++)
 	{
 		for (int col = 1; col <= cols; col++)
@@ -516,13 +516,13 @@ unique_ptr<Board> GameManager::getBoardOfPlayer(int player_id) const
 			{
 				if (player_id == PLAYER_A and Board::isBShip(brd.charAt(Coordinate(row,col,depth))) or
 					(player_id == PLAYER_B and Board::isAShip(brd.charAt(Coordinate(row, col, depth)))))
-					boardP->setSlot(Coordinate(row, col, depth), Board::SEA);
+					board.setSlot(Coordinate(row, col, depth), Board::SEA);
 				else
-					boardP->setSlot(Coordinate(row, col, depth), brd.charAt(Coordinate(row, col, depth)));
+					board.setSlot(Coordinate(row, col, depth), brd.charAt(Coordinate(row, col, depth)));
 			}
 		}		
 	}
-	return boardP;
+	return board;
 
 
 }

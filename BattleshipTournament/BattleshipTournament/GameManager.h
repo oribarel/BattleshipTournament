@@ -4,6 +4,7 @@
 #include "BoardClass.h"
 #include "Utils.h"
 
+
 typedef struct PlayerData
 {
 	IBattleshipGameAlgo *algo;
@@ -19,8 +20,8 @@ public:
 
 	//-- ctors and dtors
 	GameManager();
-	GameManager(GameManager & other);
-	GameManager& GameManager::operator=(GameManager& other) const;
+	GameManager(GameManager & other) = delete;
+	GameManager& GameManager::operator=(GameManager& other) const = delete;
 	~GameManager();
 
 	//-- getters
@@ -36,17 +37,14 @@ public:
 
 	//-- manager logic
 	bool initialize(int argc, char *argv[]);
-	//bool GameManager::initialize_file_and_naive(int argc, char *argv[]);
 	void GameManager::mainLoopEndOfGamePrint() const;
 	void mainLoop();
-	//void GameManager::findShips(char user, vector<Ship>& ships); 
-	//void revealSurroundings(int row, int col, char ship_type, Board &brd, vector<pair<int, int>> &coords);
+
 
 	//-- utils
 	static bool GameManager::find_dll(string dir_path, int player_id, string& dll);
-	unique_ptr<Board> GameManager::getBoardOfPlayer(int player_id) const;
+	Board GameManager::getBoardOfPlayer(int player_id, Board& board) const;
 	bool GameManager::initialize_board(string file_board);
-	//void GameManager::free_board(const char** board) const;
 	bool initialize_player(string dir_path, int player_id);
 	bool GameManager::initialize_players(string dir_path);
 	bool GameManager::validate_same_ships_quantities() const;
@@ -55,7 +53,9 @@ public:
 	void GameManager::notify_players(int currPlayerInx, Coordinate attack, const Ship *shipPtr, bool is_hit = true) const;
 	void GameManager::make_hit(int currPlayerInx, Coordinate attack, bool is_self_hit = false);
 	static bool allSunk(const vector<Ship>& ships);
-	//void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color);
+#ifdef _2D_
+	void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color);
+#endif
 	static pair<bool, string> GameManager::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir);
 	static const int number_of_players = 2;
 	static const int PLAYER_A = 0;

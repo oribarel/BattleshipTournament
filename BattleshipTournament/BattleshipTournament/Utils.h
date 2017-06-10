@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "IBattleshipGameAlgo.h"
 #include <windows.h>
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 
 /*
@@ -39,6 +40,10 @@ Intense White    -           15
 
 */
 
+
+// adding 2D print support for debugging purposes
+//#define _2D_
+
 //#define DEBUG_BUILD
 
 #ifdef DEBUG_BUILD
@@ -47,9 +52,18 @@ Intense White    -           15
 #define DEBUG(x) do {} while (0)
 #endif
 
+struct BoardFullData;
 struct Coordinate;
 using namespace std;
 
+typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
+struct DLLData
+{
+	string file_name;
+	GetAlgoFunc algo_func;
+	bool loaded_success;
+	DLLData(string file_name_) : file_name(file_name_), algo_func(nullptr), loaded_success(false) {}
+};
 
 //const string ERROR_FINDING_PATH = "error finding path";
 
@@ -61,14 +75,20 @@ class Utils
 		static void setForeGroundColor(int ForeGroundColor);
 		static bool Utils::is_valid_dir_path(const char *pathname);
 		static COORD GetConsoleCursorPosition(HANDLE hConsoleOutput);
-		static void Utils::updateBoardPrint(int player_color, COORD hit_coord, char current, int hit_color);
+		static void Utils::updateBoardPrint(int player_color, Coordinate hit_coord, char current, int hit_color, int num_of_rows);
+		static bool Utils::find_all_board_files(const string& dir_path, vector<BoardFullData>& boards);
 		static string find_path(const string& path_expr_to_find, bool& find_file);
 		static void set_quiet(bool is_quiet);
 		static bool get_quiet();
 		static void set_delay(int delay);
 		static string Utils::find_file(const string& path_expr_to_find, int player_id, bool at_least_two, bool& file_found);
 		static void Utils::ShowConsoleCursor(bool showFlag);
-		static bool Utils::doesCoordsEqual(Coordinate c1, Coordinate c2);
+		static bool Utils::doesCoordsEqual(Coordinate c1, Coordinate c2);		
+		static void Utils::load_dll(string dir_path, string dll, GetAlgoFunc& dll_algo_func, bool& loaded_successully);
+		static bool Utils::get_dlls(string dir_path, vector<DLLData>& players);
+		static void Utils::find_all_dll_files(const string& path_expr_to_find, bool& file_found, vector<DLLData>& players);
+		static bool Utils::get_directory_and_cmd_line_args(int argc, char *argv[], string& dir_path);
+		static pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir);
 		static const int DEFAULT_PRINT_DELAY = 2000;
 		static const int DEFAULT_START_ANIMATION_DELAY = 350;
 		static const int DEFAULT_END_ANIMATION_DELAY = 500;
@@ -79,6 +99,8 @@ class Utils
 		static const int PRINT_INDENT = 4;
 		static const char HIT_SIGN = 'X';
 		static const int PLAYER_A = 0;
+		static const int PLAYER_B = 1;
+		static const int NUMBER_OF_SHIP_TYPES = 4;
 		//static const string  FILE_NOT_FOUND;
 
 	private:

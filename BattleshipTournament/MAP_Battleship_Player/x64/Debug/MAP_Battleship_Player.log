@@ -1,0 +1,8 @@
+﻿  Utils.cpp
+  Ship.cpp
+  BoardClass.cpp
+  Battleship_MAP_player.cpp
+  Generating Code...
+     Creating library C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.lib and object C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.exp
+  MAP_Battleship_Player.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.dll
+  MAP_Battleship_Player.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\MAP_Battleship_Player.pdb (Full PDB)

@@ -3,9 +3,11 @@
 #include <vector>
 #include "Ship.h"
 #include "IBattleshipGameAlgo.h"
-#include <memory>
+#include "Utils.h"
 
 using namespace std;
+
+
 
 std::istream& safeGetline(std::istream& is, std::string& t);
 
@@ -41,8 +43,10 @@ public:
 	//Board::Board(const char** board, int rows, int columns, int depth); //non-default2
 	Board(const Board&); //copy ctor
 	Board& operator=(const Board&);
-	//char operator()(int, int) const;
-	//friend std::ostream& operator<<(std::ostream &strm, const Board &brd);
+	char operator()(Coordinate crd) const;
+	#ifdef _2D_
+	friend std::ostream& operator<<(std::ostream &strm, const Board &brd);
+	#endif
 	~Board();
 	static void Board::revealSurroundings(int row, int col, int depth, char ship_char, Board &board, vector<Coordinate> &coords);
 	static void Board::revealSurroundings(Coordinate c, char ship_char, Board &board, vector<Coordinate> &coords);
@@ -68,6 +72,21 @@ public:
 
 
 private:
-	unique_ptr<char[]>  data_;
+	vector<char>  data_;
+
+};
+
+struct BoardFullData
+{
+	Board brd;
+	vector<Ship> shipsA;
+	vector<Ship> shipsB;
+	bool valid;
+	BoardFullData() : brd(Board()), shipsA(vector<Ship>()), shipsB(vector<Ship>()), valid(false){}
+	bool BoardFullData::initialize_board(string file_board);
+	bool BoardFullData::isValidBoard() const;
+	bool BoardFullData::validate_same_ships_quantities() const;
+	bool BoardFullData::validate_ships_shape(int player_id) const;
+	bool BoardFullData::validate_no_adjacent_ships() const;
 
 };
