@@ -1,0 +1,15 @@
+<<<<<<< HEAD
+﻿  Utils.cpp
+  BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.exe
+  BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.pdb (Partial PDB)
+=======
+﻿  GameManager.cpp
+  Generating Code...
+  Compiling...
+  TournamentManager.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  Utils.cpp
+  BattleshipTournament.vcxproj -> C:\Repos\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.exe
+  BattleshipTournament.vcxproj -> C:\Repos\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.pdb (Partial PDB)
+>>>>>>> b110fbe0578c9f71b9680bb506ee39ecaf0fc9e3

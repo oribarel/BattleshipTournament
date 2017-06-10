@@ -1,0 +1,48 @@
+// BattleshipGame.cpp : Defines the entry point for the console application.
+//
+#include "TournamentManager.h"
+typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
+
+/*Main is for running games etc...*/
+int main(int argc, char *argv[])
+{
+<<<<<<< HEAD
+	vector<BoardFullData> boards = vector<BoardFullData>();
+	vector<DLLData> dlls = vector<DLLData>();
+	string dir_path;
+	if (!Utils::get_directory_and_cmd_line_args(argc, argv, dir_path))
+		return -1;
+	if (!Utils::find_all_board_files(dir_path, boards))
+		return -1;
+	if (!Utils::get_dlls(dir_path, dlls))
+		return -1;
+	GameManager manager;
+
+	/* The following line does:
+	 *  - finds files
+	 *  - checks board validity
+	 *  - manager finds the players' ships
+	 *  - manager initializes players
+	 */
+	bool success = manager.initialize(argc, argv);
+	if (!success)
+		return -1;
+
+
+	manager.mainLoop();
+
+=======
+    //-- find all dlls and make a vector of pairs<getAlgoFunc, playerName>
+    auto functions = vector<pair<GetAlgoFunc, string>>(); //todo
+    //-- find all boards and make a vector
+    auto boards = vector<Board>(); //todo
+    //-- number of threads
+    auto numOfThreads = 4; //todo
+
+    //-- create tournament
+    TournamentManager tm(numOfThreads, functions, boards);
+    tm.runTournament();
+>>>>>>> b110fbe0578c9f71b9680bb506ee39ecaf0fc9e3
+	return 0;
+}
+
