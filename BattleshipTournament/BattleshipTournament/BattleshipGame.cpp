@@ -6,8 +6,8 @@ typedef IBattleshipGameAlgo *(*GetAlgoFunc)();
 /*Main is for running games etc...*/
 int main(int argc, char *argv[])
 {
-    //-- find all dlls and make a vector
-    auto functions = vector<GetAlgoFunc>(); //todo
+    //-- find all dlls and make a vector of pairs<getAlgoFunc, playerName>
+    auto functions = vector<pair<GetAlgoFunc, string>>(); //todo
     //-- find all boards and make a vector
     auto boards = vector<Board>(); //todo
     //-- number of threads

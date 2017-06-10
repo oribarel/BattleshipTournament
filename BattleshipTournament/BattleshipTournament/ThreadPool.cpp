@@ -3,15 +3,15 @@
 #include <mutex>
 #include "ThreadPool.h"
 
-ThreadPool::ThreadPool(int numOfthreads) : shutdown_(false)
+ThreadPool::ThreadPool(unsigned int numOfthreads) : shutdown_(false)
 {
     // Create the specified number of threads
     threads_.reserve(numOfthreads);
-    for (int i = 0; i < numOfthreads; ++i)
+    for (unsigned int i = 0; i < numOfthreads; ++i)
         threads_.emplace_back(bind(&ThreadPool::threadEntry, this, i));
 }
 
-ThreadPool::ThreadPool(ThreadPool& other) : ThreadPool(other.threads_.size()) {}
+ThreadPool::ThreadPool(ThreadPool& other) : ThreadPool(static_cast<unsigned int>(other.threads_.size())) {}
 
 ThreadPool::~ThreadPool()
 {

@@ -1,13 +1,11 @@
 #include "ScoreBoard.h"
-#include <minwindef.h>
 #include <iostream>
 #include <sstream> 
+
 double gameHistory::precentage() const
 {
-        if (win == 0)
-        {
-            return 0;
-        }
+        if (win == 0.0)
+            return 0.0;
         return static_cast<double>(win) / (win + loss);
 }
 
@@ -16,17 +14,25 @@ bool gameHistory::compare(const gameHistory first, const gameHistory second)
     return (first.precentage() > second.precentage());
 }
 
+gameHistory gameHistory::add_game_histories(gameHistory gh1, gameHistory gh2)
+{
+    gameHistory ret_gh(gh1.pts_for + gh2.pts_for, gh1.pts_against + gh2.pts_against);
+    ret_gh.loss = gh1.loss + gh2.loss;
+    ret_gh.win = gh1.win + gh2.win;
+    return ret_gh;
+}
+
 //////////////////////////////
 ///       ScoreBoard
 /// represents the state of 
 /// the tournament
 ///////////////////////////////
 
-ScoreBoard::ScoreBoard(int numPlayers) : 
-    numOfPlayers(numPlayers), 
+ScoreBoard::ScoreBoard(unsigned int numPlayers) : 
+    numOfPlayers(numPlayers),
+    last_reported_round(0),
     entries(vector<ScoreBoardEntry>()){}
 
-//-- todo: fix ordering issue
 void ScoreBoard::update(gameEntry& ge, pair<int, int> scores)
 {
     gameHistory gh1(scores.first, scores.second);
@@ -36,21 +42,34 @@ void ScoreBoard::update(gameEntry& ge, pair<int, int> scores)
     entries[ge.players_indices.first].history_len++;
     entries[ge.players_indices.second].history.push_front(gh2);
     entries[ge.players_indices.second].history_len++;
+
+    int min_history_len = common_history_length();
+    if (min_history_len > last_reported_round)
+    {
+        displayScores();
+        last_reported_round++;
+    }
+}
+
+int ScoreBoard::common_history_length() const
+{
+    int min_history_len = INT32_MAX;
+    for (auto const& ge : entries)
+    {
+        min_history_len = min(min_history_len, ge.history_len);
+    }
+    return min_history_len;
 }
 
 void ScoreBoard::displayScores() const
 {
-    int max_history_len = -1;
-    for (auto const& ge : entries)
-    {
-        max_history_len = max(max_history_len, ge.history_len);
-    }
-    if (max_history_len == 0)
+    int min_history_len = common_history_length();
+    if (min_history_len == 0)
     {
         return;
     }
 
-    //abuse game history
+    //abuse gameHistory as data container
     auto partial_results = list<pair<ScoreBoardEntry, gameHistory>>();
     for (auto const& score_board_entry : entries)
     {
@@ -65,7 +84,7 @@ void ScoreBoard::displayScores() const
         };
 
         auto it = score_board_entry.history.begin();
-        for (int i = 0; i < max_history_len; i++)
+        for (int i = 0; i < min_history_len; i++)
         {
             ge_partial_sum = add_game_histories(ge_partial_sum, *it);
             ++it;

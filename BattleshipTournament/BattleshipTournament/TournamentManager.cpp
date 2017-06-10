@@ -6,12 +6,13 @@
 
 //-- ctor
 TournamentManager::TournamentManager(
-    int numOfThreads, vector<GetAlgoFunc>& functions, vector<Board>& boards) :
-score_board(ScoreBoard(functions.size())),
-scheduler(Scheduler(functions.size(), boards.size())),
+    int numOfThreads, vector<pair<GetAlgoFunc, string>>& functions_and_names, vector<Board>& boards) :
+score_board(ScoreBoard(static_cast<unsigned int>(functions_and_names.size()))),
+scheduler(Scheduler(static_cast<unsigned int>(functions_and_names.size()), static_cast<unsigned int>(boards.size()))),
 boards(boards),
-get_algos_vector(functions),
-pool(ThreadPool(numOfThreads))
+get_algos_vector(functions_and_names),
+pool(ThreadPool(numOfThreads)),
+reporter(ThreadPool(1))
 {}
 
 void TournamentManager::runTournament()
@@ -29,19 +30,16 @@ void TournamentManager::runTournament()
 /* a thread job */
 void TournamentManager::runGame(gameEntry ge)
 {
-    ////////////////////////////
-    ///  create algos one-by-one
-    ////////////////////////////
+    //--  create algos one-by-one
     get_algos_lock.lock();
     GameManager gm(ge, *this);
     get_algos_lock.unlock();
 
-
-    /////////////////////////////
-    /// run game manager
-    /////////////////////////////
-    pair<int,int> scores = gm.runGame();
-    score_board.update(ge, scores);
+    //-- run game manager
+    auto scores = gm.runGame();
+    
+    //-- update (and report in case needed)
+    reporter.doJob(std::bind(&ScoreBoard::update, &score_board, ge, scores));
 }
 
 //-- concurrently
@@ -51,7 +49,6 @@ void TournamentManager::runNextRound(vector<gameEntry>& roundGames)
     {
         pool.doJob(bind(&TournamentManager::runGame, this, game));
     }
-    pool.terminationDetection();
 }
 
 void TournamentManager::displayScores_tournamentEnd()
@@ -68,7 +65,7 @@ bool TournamentManager::tournamentOver()
 ///    getters      ////
 ////////////////////////
 
-const GetAlgoFunc& TournamentManager::getAlgo(int inx) const
+const pair<GetAlgoFunc, string> TournamentManager::getAlgo(int inx) const
 {
     return get_algos_vector[inx];
 }
@@ -77,8 +74,6 @@ const Board& TournamentManager::getBoard(int inx) const
 {
     return boards[inx];
 }
-
-
 
 
 ///////////////////////////////////////////////////////

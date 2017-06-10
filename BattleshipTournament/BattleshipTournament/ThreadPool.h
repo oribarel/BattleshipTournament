@@ -16,7 +16,7 @@ class ThreadPool
     * example ThreadPool: https://stackoverflow.com/a/29742586
     */
 public:
-    ThreadPool(int threads);
+    ThreadPool(unsigned int threads);
     ThreadPool(ThreadPool &other);
     ~ThreadPool();
     void doJob(std::function <void(void)> func);

@@ -3,7 +3,13 @@
 #include <list>
 
 using namespace std;
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
 
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
 ///////////////////////////
 ///      gameEntry      
 ///   GameManager input
@@ -11,15 +17,23 @@ using namespace std;
 
 struct gameEntry
 {
-    pair<int, int> players_indices;
+    pair<int, int> players_indices; ///< player_A, player_B
     int board_inx;
-    bool A_is_smaller_B_is_larger;
 
     gameEntry(int inx1, int inx2, int brdinx, bool a_is_smaller_b_is_larger) :
-        players_indices(pair<int, int>(inx1, inx2)),
-        board_inx(brdinx),
-        A_is_smaller_B_is_larger(a_is_smaller_b_is_larger)
-    {}
+        board_inx(brdinx)
+    {
+        int max_inx = max(inx1, inx2);
+        int min_inx = min(inx1, inx2);
+        if (a_is_smaller_b_is_larger)
+        {
+            players_indices = make_pair(min_inx, max_inx);
+        }
+        else
+        {
+            players_indices = make_pair(max_inx, min_inx);
+        }
+    }
 };
 
 
@@ -44,7 +58,7 @@ struct gameHistory
 
     double gameHistory::precentage() const;
     static bool compare(const gameHistory first, const gameHistory second);
-
+    static gameHistory add_game_histories(gameHistory gh1, gameHistory gh2);
 };
 
 
@@ -77,10 +91,12 @@ struct ScoreBoardEntry
 class ScoreBoard
 {
 public:
-    ScoreBoard(int numPlayers);
+    ScoreBoard(unsigned int numPlayers);
     void update(gameEntry& ge, pair<int, int> scores);
     void displayScores() const;
+    int ScoreBoard::common_history_length() const;
 private:
     int numOfPlayers;
+    int last_reported_round;
     vector<ScoreBoardEntry> entries;
 };

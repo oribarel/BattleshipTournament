@@ -203,20 +203,20 @@ brd(Board(tm.getBoard(ge.board_inx)))
     if (ge.A_is_smaller_B_is_larger)
     {
         players[PLAYER_A].algo = (first_smaller) ? 
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)()) :
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)());
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first).first()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second).first());
         players[PLAYER_B].algo = (first_smaller) ?
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)()) :
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)());
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second).first()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first).first());
     }
     else
     {
         players[PLAYER_A].algo = (first_smaller) ?
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)()) :
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)());
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second).first()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first).first());
         players[PLAYER_B].algo = (first_smaller) ?
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first)()) :
-            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second)());
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first).first()) :
+            unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second).first());
     }
 }
 
