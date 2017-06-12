@@ -20,7 +20,6 @@ public:
     ThreadPool(ThreadPool &other);
     ~ThreadPool();
     void doJob(std::function <void(void)> func);
-    void terminationDetection();
 
 protected:
     void threadEntry(int i);

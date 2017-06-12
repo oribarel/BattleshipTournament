@@ -41,7 +41,7 @@ public:
 	//-- manager logic
 	bool initialize(int argc, char *argv[]);
 	void GameManager::mainLoopEndOfGamePrint() const;
-	pair<int, int> GameManager::runGame() const;
+	pair<int, int> GameManager::runGame();
 	void mainLoop();
 
 

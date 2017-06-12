@@ -6,7 +6,7 @@ double gameHistory::precentage() const
 {
         if (win == 0.0)
             return 0.0;
-        return static_cast<double>(win) / (win + loss);
+        return static_cast<double>(win * 100) / (win + loss);
 }
 
 bool gameHistory::compare(const gameHistory first, const gameHistory second)
@@ -28,13 +28,23 @@ gameHistory gameHistory::add_game_histories(gameHistory gh1, gameHistory gh2)
 /// the tournament
 ///////////////////////////////
 
-ScoreBoard::ScoreBoard(unsigned int numPlayers) : 
-    numOfPlayers(numPlayers),
-    last_reported_round(0),
-    entries(vector<ScoreBoardEntry>()){}
-
-void ScoreBoard::update(gameEntry& ge, pair<int, int> scores)
+ScoreBoard::ScoreBoard(vector<DLLData>& functions) : entries(vector<ScoreBoardEntry>())
 {
+    numOfPlayers = static_cast<int>(functions.size());
+    last_reported_round = 0;
+    int i = 0;
+    for (const auto& func : functions)
+    {
+        entries.push_back(ScoreBoardEntry(i, func.file_name));
+        i++;
+    }
+}
+
+void ScoreBoard::update(gameEntry ge, pair<int, int> scores)
+{
+    //cerr << "in game " << ge.players_indices.first << " vs " << ge.players_indices.second << " on board "
+    //    << ge.board_inx << ": score " << scores.first << "/" << scores.second << endl;
+
     gameHistory gh1(scores.first, scores.second);
     gameHistory gh2(scores.second, scores.first);
 
@@ -96,10 +106,11 @@ void ScoreBoard::displayScores() const
     );
 
     int j = 0;
+    cout << "#       Team Name               Wins    Losses  %       Pts For Pts Against" << endl;
     for ( auto it = partial_results.begin(); it != partial_results.end(); ++it)
     {
         std::stringstream fmt;
-        fmt << j++ << ".\t" << it->first.algoID /*todo: change to name*/
+        fmt << j++ << ".\t" << it->first.algoName /*todo: change to name*/
             << '\t' << it->second.win << '\t'
             << it->second.loss << '\t'
             << it->second.precentage() << '\t'

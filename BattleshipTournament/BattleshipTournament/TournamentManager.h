@@ -52,6 +52,8 @@ protected:
     //vector<pair<GetAlgoFunc, string>> get_algos_vector;    ///< functions to algo instance making
 	vector<DLLData> get_algos_vector;					   ///< functions to algo instance making
     mutex get_algos_lock;                                  ///< no cuncurrent algo instance making (underlying impl might fail)
+    mutex round_m;                                           ///< round mutex
+    condition_variable round_cv;                           ///< round condition variable
     ThreadPool pool;                                       ///< ThreadPool
     ThreadPool reporter;                                   ///< reporter
 };

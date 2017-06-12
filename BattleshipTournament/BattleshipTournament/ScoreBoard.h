@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <list>
+#include "Utils.h"
 
 using namespace std;
 #ifndef min
@@ -71,12 +72,13 @@ struct gameHistory
 struct ScoreBoardEntry
 {
     int algoID;
-    // todo algo name
+    string algoName;
     int history_len;
     list<gameHistory> history;
 
-    ScoreBoardEntry(int algoID) :
+    ScoreBoardEntry(int algoID, string algoName) :
         algoID(algoID),
+        algoName(algoName),
         history_len(0),
         history(list<gameHistory>()) {}
 };
@@ -91,8 +93,8 @@ struct ScoreBoardEntry
 class ScoreBoard
 {
 public:
-    ScoreBoard(unsigned int numPlayers);
-    void update(gameEntry& ge, pair<int, int> scores);
+    ScoreBoard(vector<DLLData>& functions);
+    void update(gameEntry ge, pair<int, int> scores);
     void displayScores() const;
     int ScoreBoard::common_history_length() const;
 private:

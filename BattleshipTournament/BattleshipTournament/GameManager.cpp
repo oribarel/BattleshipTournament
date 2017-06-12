@@ -30,7 +30,7 @@ GameManager::GameManager(gameEntry ge, const TournamentManager& tm) :
 }
 
 
-pair<int, int> GameManager::runGame() const
+pair<int, int> GameManager::runGame()
 {
 	//-- set players
 	players[PLAYER_A].algo->setPlayer(PLAYER_A);
@@ -44,9 +44,13 @@ pair<int, int> GameManager::runGame() const
 	players[PLAYER_A].algo->setBoard(aBrd);
 	players[PLAYER_B].algo->setBoard(bBrd);
 
-	//-- run game
+    // find ships
+    brd.findShips(PLAYER_A, players[PLAYER_A].ships);
+    brd.findShips(PLAYER_B, players[PLAYER_B].ships);
 
-	return pair<int, int>(1, 0);
+	//-- run game
+    mainLoop();
+	return pair<int, int>(players[PLAYER_A].score, players[PLAYER_B].score);
 }
 
 
@@ -437,7 +441,7 @@ void GameManager::make_hit(int currPlayerInx, Coordinate attack, bool is_self_hi
 
 void GameManager::mainLoop()
 {
-	Utils::ShowConsoleCursor(false);
+	//Utils::ShowConsoleCursor(false);
 	Board& board = brd;
 	bool OutOfAttacks[2] = { false, false };
 	while (isGameOn(OutOfAttacks))
@@ -480,8 +484,8 @@ void GameManager::mainLoop()
 			}
 		} while (true);
 	}
-	Utils::ShowConsoleCursor(true);
-	mainLoopEndOfGamePrint();
+	//Utils::ShowConsoleCursor(true);
+	//mainLoopEndOfGamePrint();
 }
 
 int GameManager::getNumOfPlayers() const

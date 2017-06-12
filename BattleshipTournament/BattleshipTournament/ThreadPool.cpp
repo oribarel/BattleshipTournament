@@ -51,35 +51,17 @@ void ThreadPool::threadEntry(int i)
             if (jobs_.empty())
             {
                 // No jobs to do and we are shutting down
-                cerr << "Thread " << i << " terminates" << endl;
+                //cerr << "Thread " << i << " terminates" << endl;
                 return;
             }
 
-            cerr << "Thread " << i << " does a job" << endl;
+
+            //cerr << "Thread " << i << " does a job" << endl;
             job = move(jobs_.front());
             jobs_.pop();
         }//-- here lock dies
 
          // Do the job without holding any locks
         job();
-    }
-}
-
-/*
-* This function makes sure all jobs are done
-*/
-void ThreadPool::terminationDetection()
-{
-    while (true)
-    {
-        {
-            std::unique_lock<std::mutex> lock(lock_);
-            if (jobs_.empty())
-            {
-                std::cout << "termination detection" << std::endl;
-                return;
-            }
-        }//--lock dies here
-         //-- maybe next time...
     }
 }

@@ -3,11 +3,12 @@
 #include "GameManager.h"
 #include "TournamentManager.h"
 
+unsigned int round_games_finished = 0;
 
 //-- ctor
 TournamentManager::TournamentManager(
 	int numOfThreads, vector<DLLData>& functions, vector<BoardFullData>& boards) :
-score_board(ScoreBoard(static_cast<unsigned int>(functions.size()))),
+score_board(ScoreBoard(functions)),
 scheduler(Scheduler(static_cast<unsigned int>(functions.size()), static_cast<unsigned int>(boards.size()))),
 boards(boards),
 get_algos_vector(functions),
@@ -22,7 +23,7 @@ void TournamentManager::runTournament()
         auto round_games = vector<gameEntry>();
         scheduler.scheduleNextRound(round_games);
         runNextRound(round_games); //-- concurrent
-        score_board.displayScores();
+        //score_board.displayScores();
     }
     displayScores_tournamentEnd();
 }
@@ -37,23 +38,39 @@ void TournamentManager::runGame(gameEntry ge)
 
     //-- run game manager
     auto scores = gm.runGame();
-    
-    //-- update (and report in case needed)
+    //-- update (and report case needed)
     reporter.doJob(std::bind(&ScoreBoard::update, &score_board, ge, scores));
+    
+    {
+        unique_lock<mutex> lk(round_m);
+        round_games_finished++;
+    }
+    round_cv.notify_all();
+
 }
 
 //-- concurrently
 void TournamentManager::runNextRound(vector<gameEntry>& roundGames)
 {
+    round_games_finished = 0;
     for (const auto& game : roundGames)
     {
         pool.doJob(bind(&TournamentManager::runGame, this, game));
     }
+
+    {
+        unique_lock<mutex> lk(round_m);
+        round_cv.wait(lk, [roundGames]{
+            return round_games_finished == roundGames.size();
+        });
+    }
+
 }
 
 void TournamentManager::displayScores_tournamentEnd()
 {
     cout << "Tournament Ended" << endl;
+    score_board.displayScores();
 }
 
 bool TournamentManager::tournamentOver() const
@@ -89,7 +106,7 @@ Scheduler::Scheduler(int numOfPlayers, int numOfBoards) :
 {
     auto schedulingEntries = ((numOfPlayers + 1) / 2) * 2;
 	scheduling = vector<int>(schedulingEntries, -1);
-    for (int i = 0; i < schedulingEntries; i++)
+    for (int i = 0; i < numOfPlayers; i++)
     {
         scheduling[i] = i;
     }
@@ -97,6 +114,7 @@ Scheduler::Scheduler(int numOfPlayers, int numOfBoards) :
 
 void Scheduler::scheduleNextRound(vector<gameEntry>& roundGames)
 {
+
     int halfSize = (numOfPlayers + 1) / 2;
     roundGames.clear();
     roundGames.reserve(halfSize);
@@ -141,7 +159,7 @@ void Scheduler::updateSchedulingVector()
     if (completedBoard())
     {
         currBoard++;
-        if (currBoard > numOfBoards)
+        if (currBoard >= numOfBoards)
         {
             currBoard = 0;
             num_of_times_passed_all_boards++;
