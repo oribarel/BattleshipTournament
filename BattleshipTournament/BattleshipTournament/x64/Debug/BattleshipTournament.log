@@ -1,10 +1,4 @@
-﻿  Utils.cpp
-  TournamentManager.cpp
-  ThreadPool.cpp
-  Ship.cpp
-  ScoreBoard.cpp
-  GameManager.cpp
-  BoardClass.cpp
+﻿  Logger.cpp
   BattleshipGame.cpp
   Generating Code...
   BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.exe

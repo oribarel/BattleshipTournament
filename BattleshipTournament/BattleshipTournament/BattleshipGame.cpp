@@ -3,16 +3,23 @@
 #include "BoardClass.h"
 #include "TournamentManager.h"
 #include "GameManager.h"
-
+#include "Logger.h"
 
 ///*Main is for running games etc...*/
 int main(int argc, char *argv[])
 {
+
+
     vector<BoardFullData> boards = vector<BoardFullData>();
     vector<DLLData> dlls = vector<DLLData>();
     string dir_path;
     if (!Utils::get_directory_and_cmd_line_args(argc, argv, dir_path))
         return -1;
+
+	// starting logger
+	Logger LOGGER(dir_path);
+
+
     if (!Utils::find_all_board_files(dir_path, boards))
         return -1;
     if (!Utils::get_dlls(dir_path, dlls))
