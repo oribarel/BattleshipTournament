@@ -499,7 +499,7 @@ bool GameManager::selfHit(PlayerData& player, Coordinate attack)
 	Ship *shipPtr = this->getShipAtCrd(attack);
 	if (shipPtr != nullptr)
 	{
-		if (player.id == 'A')
+		if (player.id == PLAYER_A)
 			return (shipPtr->isAShip() and !shipPtr->isSunk());
 		else
 			return (shipPtr->isBShip() and !shipPtr->isSunk());

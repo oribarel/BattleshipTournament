@@ -152,7 +152,12 @@ void Battleship_MAP_player::notifyAttackSink(Coordinate crd)
 {
     destroySession.push_back(crd);
     turn_sunk_ship_to_obstacle(destroySession);
-	enemy_ships_left[destroySession.size() - 1]--;
+
+	// if the following condition is not satisfied
+	//do nothing - this should occour for unbalanced boards only
+	// wich we assume are illegal
+	if (destroySession.size() <= enemy_ships_left.size())
+		enemy_ships_left[destroySession.size() - 1]--;
     destroySession.clear();
 
     // if uncompleteHitSpots is empty then just seek
