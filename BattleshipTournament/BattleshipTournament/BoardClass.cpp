@@ -5,6 +5,7 @@
 #include <iso646.h>
 #include <regex>
 #include <map>
+#include "Logger.h"
 
 using namespace std;
 
@@ -46,6 +47,7 @@ char Board::charAt(Coordinate c) const
 {
 	if (isInBoard(c))
 		return data_[coordToDataIndex(c)];
+	//TODO: handle it
 	throw std::out_of_range("Trying to access invalid index in the board.");
 }
 
@@ -435,15 +437,18 @@ bool BoardFullData::initialize_board(string file_board)
 
 
 	// check board validity
-	if (!this->isValidBoard())
+	bool balanced_board = true;
+	if (!this->isValidBoard(balanced_board))
 		return false;
+	if (!balanced_board)
+		LOGGER.log("WARNING: board " + file_board + " is imbalanced");
 	DEBUG("*** board is valid ***");
 	this->valid = true;
 	return true;
 }
 
 
-bool BoardFullData::isValidBoard() const
+bool BoardFullData::isValidBoard(bool& balanced_board) const
 {
 	// validate shape of ships
 	bool is_valid = validate_ships_shape(Board::PLAYER_A) && validate_ships_shape(Board::PLAYER_B);
@@ -456,7 +461,7 @@ bool BoardFullData::isValidBoard() const
 	// validate same quantities of ships
 	if (!validate_same_ships_quantities())
 	{
-		//TODO: print to log
+		balanced_board = false;
 	}
 	return is_valid;
 }
@@ -476,7 +481,7 @@ bool BoardFullData::validate_same_ships_quantities() const
 	/* build histogram for B ships */
 	for (auto it = shipsB.begin(); it != shipsB.end(); ++it)
 	{
-		ship_types_A[it->getType()]++;
+		ship_types_B[it->getType()]++;
 	}
 	/* compare histograms */
 	return ship_types_A[Ship::ship_type::A_BOAT] == ship_types_B[Ship::ship_type::B_BOAT] and

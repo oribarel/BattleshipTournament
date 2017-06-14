@@ -17,7 +17,8 @@ int main(int argc, char *argv[])
         return -1;
 
 	// starting logger
-	Logger LOGGER(dir_path);
+	 Logger::getLogger();
+	 LOGGER.init(dir_path);
 
 
     if (!Utils::find_all_board_files(dir_path, boards))

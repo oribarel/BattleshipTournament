@@ -6,21 +6,32 @@
 #include <memory>
 
 #define LOGGER_FILE_NAME string("/game.log") 
+#define LOGGER Logger::getLogger()
 using namespace std;
 
 class Logger {
 private:
 	std::unique_ptr<std::ostream> output_stream{ nullptr };
+	Logger() = default;
+	Logger(const Logger&) = delete;
+	Logger& operator= (const Logger&) = delete;
 
 public:
-	Logger(std::string dir_path) :
-		output_stream(std::make_unique<std::ofstream>(dir_path + LOGGER_FILE_NAME, ios::out | ios::app))
-	{this->log("**** STARTING THE PROGRAM *****"); }
+	// singleton
+	static Logger& Logger::getLogger()
+	{
+		static Logger logger;
+		return logger;
+	}
+	void Logger::init(std::string dir_path)
+	{
+		output_stream = std::make_unique<std::ofstream>(dir_path + LOGGER_FILE_NAME, ios::out | ios::app);
+		this->log("**** STARTING THE PROGRAM *****");
+	}
 
-	// default destructor is OK
 
 	template<typename T>
-	void log(T info)
+	void log(const T& info)
 	{
 		*output_stream << CurrentDateTime() << ":\t";
 		*output_stream << info << std::endl;

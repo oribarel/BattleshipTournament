@@ -84,7 +84,7 @@ struct BoardFullData
 	bool valid;
 	BoardFullData() : brd(Board()), shipsA(vector<Ship>()), shipsB(vector<Ship>()), valid(false){}
 	bool BoardFullData::initialize_board(string file_board);
-	bool BoardFullData::isValidBoard() const;
+	bool BoardFullData::isValidBoard(bool& balanced_board) const;
 	bool BoardFullData::validate_same_ships_quantities() const;
 	bool BoardFullData::validate_ships_shape(int player_id) const;
 	bool BoardFullData::validate_no_adjacent_ships() const;
