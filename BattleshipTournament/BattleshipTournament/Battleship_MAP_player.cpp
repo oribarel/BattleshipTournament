@@ -3,6 +3,7 @@
 #include <exception>
 #include <ctime>
 #include <iso646.h>
+#include <algorithm>
 
 
 /*************************************
@@ -13,6 +14,7 @@ Battleship_MAP_player::Battleship_MAP_player() :
     player_(0),
     brd(Board()),
     ships(vector<Ship>()),
+	heatmap(HeatMap()),
     obstacles(HeatMap()),
     isSeek(true),
     destroySession(vector<Crd>()),
@@ -28,24 +30,33 @@ Battleship_MAP_player::~Battleship_MAP_player()
 }
 
 
-// TODO
+
 void Battleship_MAP_player::setPlayer(int player)
 {
-    //-- TODO (symbolizes a rest - so reset thyself!)
+    //-- not guaranteed to be called.
     player_ = player;
 }
 
-// adapted
+
 void Battleship_MAP_player::setBoard(const BoardData& board)
 {
+	//-- guaranteed to be called before a new game
     constructBoardFromBoardData(board);
+	ships.clear();
     this->brd.findShips(PLAYER_A, ships);
     if (ships.empty())
         this->brd.findShips(PLAYER_B, ships);
+	
+	enemy_ships_left = vector<int>(Ship::MAXIMUM_SHIP_SIZE, 0);
 	for (auto const& ship : ships)
 		enemy_ships_left[Ship::getSizeOfShipType(ship.getType()) - 1]++;
 
     initObstacles();
+	isSeek = true;
+	destroySession.clear();
+	heatmap = HeatMap(brd);
+	computeSeekHeat();
+	uncompleteHitSpots = HeatMap(brd);
 }
 
 // adapted
@@ -68,17 +79,17 @@ void Battleship_MAP_player::constructBoardFromBoardData(const BoardData& board_d
 // adapted
 Coordinate Battleship_MAP_player::attack()
 {
-    HeatMap heatmap;
+    //HeatMap heatmap;
     Crd attackCrd(-1,-1,-1);
     if (isSeek)
     {
-        heatmap = computeSeekHeat();
+        //heatmap = computeSeekHeat();
         heatmap.getMaxHeatCoord(attackCrd);
     }
     else
     {
-        heatmap = computeDestroyHeat();
-        heatmap.getMaxHeatCoord(attackCrd);
+        HeatMap destroy_heatmap = computeDestroyHeat();
+		destroy_heatmap.getMaxHeatCoord(attackCrd);
     }
     return attackCrd;
 }
@@ -97,6 +108,7 @@ bool Battleship_MAP_player::myShipAt(Coordinate crd) const
  // adapted
 void Battleship_MAP_player::notifyAttackMiss(Coordinate crd)
 {
+	updateObstacleAt(crd);
     obstacles.setCoord(crd, 1);
 }
 
@@ -223,9 +235,12 @@ void Battleship_MAP_player::turn_sunk_ship_to_obstacle(vector<Crd> sunkShipCoord
         { 
             auto currCrd = addCoords(move, crd);
             if (brd.isInBoard(currCrd))
+            {
                 obstacles.setCoord(currCrd, 1); //set adjacent coords as obstacle
+            }
         }
     }
+	computeSeekHeat();
 }
 
 // adapted
@@ -302,9 +317,9 @@ void Battleship_MAP_player::initObstacles()
 }
 
 // adapted
-void Battleship_MAP_player::seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, Coordinate crd) const
+void Battleship_MAP_player::seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, Coordinate crd)
 {
-    seekHeatMap.coordPlusX(crd, 1 * enemy_ships_left[0]); //adding for 1 slot ship since has no orientation
+    seekHeatMap.coordPlusX(crd, enemy_ships_left[0]); //adding for 1 slot ship since has no orientation
     
     Crd orientations[] = {
         Crd(1,0,0),
@@ -334,36 +349,53 @@ void Battleship_MAP_player::seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, 
             enemyCrds.push_back(longer);
             // if here means no obstacles:
             for (const auto& icrd : enemyCrds)
-                seekHeatMap.coordPlusX(icrd, 1 * enemy_ships_left[shipSize - 1]);
+                seekHeatMap.coordPlusX(icrd, enemy_ships_left[shipSize - 1]);
         }
     }
 }
 
-// adapted
+// todo: unused
 /**
  * \brief: This function goes over all of the coords of the board,
  * and if a coord could possible be a top/north/west edge of an enemy
  * ship, then it increases the heat of all the coords of that ship
  * by 1.
  */
-HeatMap Battleship_MAP_player::computeSeekHeat() const
+void Battleship_MAP_player::computeSeekHeat()
 {
-    auto seekHeatMap = HeatMap(brd);
-    for (int i = 1; i <= brd.rows(); i++)
-    {
-        for (int j = 1; j <= brd.cols(); j++)
-        {
-            for (int k = 1; k <= brd.depth(); k++)
-            {
-                //i,j is the top/left edge of an enemy ship
-                auto crd = Coordinate(i, j, k);
-                if (obstacles(crd) == 1)
-                    continue;
-                seekHeat_addHeat_tryShipSizes(seekHeatMap, crd);
-            }
-        }
-    }
-    return seekHeatMap;
+    //auto seekHeatMap = HeatMap(brd);
+	/*vector<Coordinate> coords_possible = getNumOfCoordsPossible();
+	if (coords_possible.size() > MANY_COORDS_POSSIBLE) //-- num of coords_possible > define value
+	{
+		int samples = 0;
+		size_t num_of_samples = coords_possible.size()/20;
+		std::random_shuffle(coords_possible.begin(), coords_possible.end());
+		for (auto i = 0; i < num_of_samples; i++)
+		{
+			Coordinate sample = coords_possible[i];
+			seekHeat_addHeat_tryShipSizes(seekHeatMap, sample);
+		}
+		return seekHeatMap;
+	}
+	else
+	{*/
+	heatmap = HeatMap(brd);
+	for (int i = 1; i <= brd.rows(); i++)
+	{
+		for (int j = 1; j <= brd.cols(); j++)
+		{
+			for (int k = 1; k <= brd.depth(); k++)
+			{
+				//i,j is the top/left edge of an enemy ship
+				auto crd = Coordinate(i, j, k);
+				if (obstacles(crd) == 1)
+					continue;
+				seekHeat_addHeat_tryShipSizes(heatmap, crd);
+			}
+		}
+	}
+		//return seekHeatMap;
+	//}
 }
 
 // adapted
@@ -414,7 +446,7 @@ void Battleship_MAP_player::computeDestroyHeatAllOptions(HeatMap& heat_map, Crd 
             if (legal)
             {
                 for (auto& crd : currPositionCrdVect)
-                    heat_map.coordPlusX(crd, 1* enemy_ships_left[shipSize - 1]);
+                    heat_map.coordPlusX(crd, enemy_ships_left[shipSize - 1]);
             }
         }
     }
@@ -475,6 +507,51 @@ HeatMap Battleship_MAP_player::computeDestroyHeat() const
         destroyHeatMap.setCoord(crd, 0);
     }
     return destroyHeatMap;
+}
+
+
+void Battleship_MAP_player::updateObstacleAt(Coordinate crd)
+{
+	removeHeatAroundObstacle(crd, Crd(1, 0, 0));
+	removeHeatAroundObstacle(crd, Crd(0, 1, 0));
+	removeHeatAroundObstacle(crd, Crd(0, 0, 1));
+	obstacles.setCoord(crd, 1);
+}
+
+void Battleship_MAP_player::removeHeatAroundObstacle(Coordinate obst, Coordinate ori)
+{
+	auto base_plus_a_times_adv = [](Crd base, int a, Crd adv)
+	{
+		return Crd(base.row + a * adv.row,
+			base.col + a * adv.col,
+			base.depth + a * adv.depth);
+	};
+
+	size_t len = 1;
+	for (size_t shipSize = len + 1; shipSize <= Ship::MAXIMUM_SHIP_SIZE; shipSize++)
+	{ //go over possible ship sizes
+		for (int mv = 0; mv <= shipSize - len; mv++)
+		{ //go over possible positions
+			auto startCrd = base_plus_a_times_adv(obst, -mv, ori);
+			auto currPositionCrdVect = vector<Crd>();
+			bool legal = true;
+			for (int crdIdx = 0; crdIdx < shipSize; crdIdx++)
+			{
+				auto currCrd = base_plus_a_times_adv(startCrd, crdIdx, ori);
+				if (!brd.isInBoard(currCrd) || obstacles(currCrd) == 1)
+				{
+					legal = false;
+					break;
+				}
+				currPositionCrdVect.push_back(currCrd);
+			}
+			if (legal)
+			{
+				for (auto& crd : currPositionCrdVect)
+					heatmap.coordPlusX(crd, -enemy_ships_left[shipSize - 1]);
+			}
+		}
+	}
 }
 
 /************************

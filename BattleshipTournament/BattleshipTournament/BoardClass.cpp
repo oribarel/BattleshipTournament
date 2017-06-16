@@ -47,8 +47,8 @@ char Board::charAt(Coordinate c) const
 {
 	if (isInBoard(c))
 		return data_[coordToDataIndex(c)];
-	//TODO: handle it
-	throw std::out_of_range("Trying to access invalid index in the board.");
+	else
+		return SEA;
 }
 
 //non-default ctor
@@ -79,7 +79,7 @@ Board::Board(int rows, int columns, int depth) : BoardData(), data_(vector<char>
 
 void Board::readDimensionsFromFile(bool& is_valid, std::string line)
 {
-	if (std::regex_match(line, std::regex("[0-9]+[x][0-9]+[x][0-9](\\s*)")))
+	if (std::regex_match(line, std::regex("[0-9]+[x][0-9]+[x][0-9]+(\\s*)")))
 	{
 		stringstream stream(line);
 		int num;

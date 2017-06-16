@@ -26,6 +26,9 @@ int main(int argc, char *argv[])
     if (!Utils::get_dlls(dir_path, dlls))
         return -1;
 
+	cout << "Number of legal players: " << dlls.size() << endl;
+	cout << "Number of legal boards: "  << boards.size() << endl;
+
     //-- number of threads
     auto numOfThreads = 4; //todo
 

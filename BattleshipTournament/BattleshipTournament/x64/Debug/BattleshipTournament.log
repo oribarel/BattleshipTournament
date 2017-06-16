@@ -1,3 +1,12 @@
-﻿  BoardClass.cpp
+﻿  BattleshipGame.cpp
+  Generating Code...
+  Compiling...
+  Utils.cpp
+  TournamentManager.cpp
+  Ship.cpp
+  ScoreBoard.cpp
+  GameManager.cpp
+  BoardClass.cpp
+  Generating Code...
   BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.exe
   BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.pdb (Partial PDB)

@@ -115,6 +115,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BoardClass.h" />
+    <ClInclude Include="DummyPlayer.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="IBattleshipGameAlgo.h" />
     <ClInclude Include="Logger.h" />

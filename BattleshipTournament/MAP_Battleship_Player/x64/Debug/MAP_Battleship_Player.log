@@ -1,5 +1,6 @@
 ﻿  Utils.cpp
   Ship.cpp
+  Logger.cpp
   BoardClass.cpp
   Battleship_MAP_player.cpp
   Generating Code...

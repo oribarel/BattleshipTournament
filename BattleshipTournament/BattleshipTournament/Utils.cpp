@@ -156,7 +156,7 @@ bool Utils::find_all_board_files(const string& dir_path, vector<BoardFullData>& 
 	}	
 	if (!board_found)
 	{
-		cout << "Missing board file (*.sboard) looking in path: " << dir_path << endl; //ReqPrnt
+		cout << "No board files (*.sboard) looking in path: " << dir_path << endl; //ReqPrnt
 		string dummy_str;
 		/* even if dll is missing for both players an error message will be printed only once, intentionally*/
 	}
@@ -205,7 +205,7 @@ bool Utils::get_dlls (string dir_path, vector<DLLData>& players)
 	find_all_dll_files(dir_path + s_dll, file_found, players, dir_path);
 	if (!file_found or players.size() <= 1)
 	{
-		cout << "Missing an algorithm (dll) file looking in path: " << path << endl;
+		cout << "Missing algorithm (dll) files looking in path: " << path << " (needs at least two)" << endl;
 		return false;
 	}
 	return true;

@@ -147,12 +147,14 @@
     <ClInclude Include="..\BattleshipTournament\Battleship_MAP_player.h" />
     <ClInclude Include="..\BattleshipTournament\BoardClass.h" />
     <ClInclude Include="..\BattleshipTournament\IBattleshipGameAlgo.h" />
+    <ClInclude Include="..\BattleshipTournament\Logger.h" />
     <ClInclude Include="..\BattleshipTournament\Ship.h" />
     <ClInclude Include="..\BattleshipTournament\Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\BattleshipTournament\Battleship_MAP_player.cpp" />
     <ClCompile Include="..\BattleshipTournament\BoardClass.cpp" />
+    <ClCompile Include="..\BattleshipTournament\Logger.cpp" />
     <ClCompile Include="..\BattleshipTournament\Ship.cpp" />
     <ClCompile Include="..\BattleshipTournament\Utils.cpp" />
   </ItemGroup>

@@ -30,6 +30,9 @@
     <ClInclude Include="..\BattleshipTournament\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\BattleshipTournament\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\BattleshipTournament\Battleship_MAP_player.cpp">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\BattleshipTournament\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BattleshipTournament\Logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

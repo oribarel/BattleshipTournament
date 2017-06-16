@@ -46,6 +46,7 @@ class Battleship_MAP_player : public IBattleshipGameAlgo
 public:
     static const int PLAYER_A = 0;
     static const int PLAYER_B = 1;
+	//static const int MANY_COORDS_POSSIBLE = 400;
 
     Battleship_MAP_player();
 
@@ -84,18 +85,20 @@ private:
 
     void constructBoardFromBoardData(const BoardData& board_data);
     void initObstacles();
-    void seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, Coordinate crd) const;
-    HeatMap computeSeekHeat() const;
+	void seekHeat_addHeat_tryShipSizes(HeatMap& seekHeatMap, Coordinate crd);
+    void computeSeekHeat();
     Coordinate findTopNorthWestrenDestroySessionCoord() const;
     void Battleship_MAP_player::computeDestroyHeatAllOptions(HeatMap& heat_map, Crd orientation) const;
     Crd Battleship_MAP_player::destroySessionOrientation() const;
     HeatMap computeDestroyHeat() const;
-
+	void updateObstacleAt(Coordinate crd);
+	void removeHeatAroundObstacle(Coordinate obst, Coordinate ori);
     int player_;
     Board brd;
     vector<Ship> ships;
 	vector<int> enemy_ships_left;
 
+	HeatMap heatmap;
     HeatMap obstacles; //in this heatmap 1 means obstacle and 0 means possible
     bool isSeek; // true == SeekMode, false == DestroyMode
     //HeatMap heatmap;

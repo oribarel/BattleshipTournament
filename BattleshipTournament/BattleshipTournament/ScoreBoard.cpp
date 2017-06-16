@@ -1,6 +1,7 @@
 #include "ScoreBoard.h"
 #include <iostream>
 #include <sstream> 
+#include <iomanip>
 
 double gameHistory::precentage() const
 {
@@ -106,14 +107,14 @@ void ScoreBoard::displayScores() const
     );
 
     int j = 0;
-    cout << "#       Team Name               Wins    Losses  %       Pts For Pts Against" << endl;
+    cout << "\n#       Team Name                 Wins    Losses  %       Pts For Pts Against\n" << endl;
     for ( auto it = partial_results.begin(); it != partial_results.end(); ++it)
     {
         std::stringstream fmt;
         fmt << j++ << ".\t" << it->first.algoName /*todo: change to name*/
             << '\t' << it->second.win << '\t'
             << it->second.loss << '\t'
-            << it->second.precentage() << '\t'
+            << setprecision(2) << fixed << it->second.precentage() << '\t'
             << it->second.pts_for << '\t'
             << it->second.pts_against;
         cout << fmt.str() << endl;

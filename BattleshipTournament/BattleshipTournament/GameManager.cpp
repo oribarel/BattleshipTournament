@@ -4,6 +4,8 @@
 #include <direct.h>
 #include <map>
 #include "TournamentManager.h"
+#include "DummyPlayer.h"
+#include "Logger.h"
 
 using namespace std;
 
@@ -26,7 +28,15 @@ GameManager::GameManager(gameEntry ge, const TournamentManager& tm) :
 #endif
 
 	players[PLAYER_A].algo = unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.first).algo_func());
+	if (players[PLAYER_A].algo.get() == nullptr)
+	{
+		players[PLAYER_A].algo = make_unique<DummyPlayer>();
+	}
 	players[PLAYER_B].algo = unique_ptr<IBattleshipGameAlgo>(tm.getAlgo(ge.players_indices.second).algo_func());
+	if (players[PLAYER_B].algo.get() == nullptr)
+	{
+		players[PLAYER_B].algo = make_unique<DummyPlayer>();
+	}
 }
 
 
@@ -48,9 +58,15 @@ pair<int, int> GameManager::runGame()
     brd.findShips(PLAYER_A, players[PLAYER_A].ships);
     brd.findShips(PLAYER_B, players[PLAYER_B].ships);
 
+#ifdef _2D_
+	if (!Utils::get_quiet())
+		cout << brd << endl;
+#endif
+
 	//-- run game
     mainLoop();
 	return pair<int, int>(players[PLAYER_A].score, players[PLAYER_B].score);
+
 }
 
 
@@ -387,7 +403,7 @@ bool GameManager::allSunk(const vector<Ship>& ships)
 }
 
 /* OBSOLETE */
-#ifdef _2d_
+#ifdef _2D_
 void GameManager::update_board_print(int player_color, Coordinate attack, int hit_color)
 {
 	Board& board = brd;
@@ -450,7 +466,7 @@ void GameManager::mainLoop()
 		do
 		{
 			auto attack = currPlayer.algo->attack();
-			DEBUG("player " << currPlayerInx << " attack is "  << attack.row << ", " << attack.col ", " << attack.depth);
+			LOGGER.log("player "s + std::to_string(currPlayerInx) + " attack is "s  + std::to_string(attack.row) + ", "s + std::to_string(attack.col) + ", "s + std::to_string(attack.depth));
 			DEBUG("Points:");
 			DEBUG("Player A: " << players[PLAYER_A].score);
 			DEBUG("Player B: " << players[PLAYER_B].score);
