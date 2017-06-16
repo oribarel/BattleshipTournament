@@ -106,7 +106,7 @@ void ScoreBoard::displayScores() const
         return gameHistory::compare(p1.second, p2.second); }
     );
 
-    int j = 0;
+    int j = 1;
     cout << "\n#       Team Name                 Wins    Losses  %       Pts For Pts Against\n" << endl;
     for ( auto it = partial_results.begin(); it != partial_results.end(); ++it)
     {

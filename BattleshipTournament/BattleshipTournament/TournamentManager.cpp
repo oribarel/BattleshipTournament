@@ -25,7 +25,7 @@ void TournamentManager::runTournament()
         runNextRound(round_games); //-- concurrent
         //score_board.displayScores();
     }
-    displayScores_tournamentEnd();
+    reporter.doJob(std::bind(&TournamentManager::displayScores_tournamentEnd, this));
 }
 
 /* a thread job */
@@ -69,7 +69,7 @@ void TournamentManager::runNextRound(vector<gameEntry>& roundGames)
 
 void TournamentManager::displayScores_tournamentEnd()
 {
-    cout << "Tournament Ended" << endl;
+    //cout << "Tournament Ended" << endl;
     score_board.displayScores();
 }
 

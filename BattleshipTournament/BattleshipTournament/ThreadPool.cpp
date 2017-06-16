@@ -24,7 +24,7 @@ ThreadPool::~ThreadPool()
     } //-- here lock dies
 
       // Wait for all threads to stop
-    cerr << "Joining threads" << endl;
+    //cerr << "Joining threads" << endl;
     for (auto& thread : threads_)
         thread.join();
 }

@@ -1,12 +1,13 @@
-﻿  BattleshipGame.cpp
-  Generating Code...
-  Compiling...
+﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppClean.targets(76,5): warning : The process cannot access the file 'c:\git\battleshiptournament\battleshiptournament\x64\debug\battleshiptournament.pdb' because it is being used by another process.
   Utils.cpp
   TournamentManager.cpp
+  ThreadPool.cpp
   Ship.cpp
   ScoreBoard.cpp
+  Logger.cpp
   GameManager.cpp
   BoardClass.cpp
+  BattleshipGame.cpp
   Generating Code...
   BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.exe
   BattleshipTournament.vcxproj -> C:\GIT\BattleshipTournament\BattleshipTournament\x64\Debug\BattleshipTournament.pdb (Partial PDB)
