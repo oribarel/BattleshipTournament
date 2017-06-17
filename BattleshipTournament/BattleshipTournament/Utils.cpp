@@ -2,6 +2,8 @@
 #include "Boardclass.h"
 #include <iso646.h>
 #include <map>
+#include "Logger.h"
+#include <regex>
 using namespace std;
 
 //const string Utils::FILE_NOT_FOUND = "file not found";
@@ -77,7 +79,7 @@ void Utils::set_delay(int delay)
 }
 
 
-pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir)
+pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir, int& num_of_threads)
 {
 	string dir_path = ".";
 	is_working_dir = (argc == 1);
@@ -97,6 +99,12 @@ pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], b
 			if (i == 1)
 				is_working_dir = true;
 		}
+		if (argument == "-threads")
+		{
+			num_of_threads = atoi(argv[i + 1]);
+			if (i == 1)
+				is_working_dir = true;
+		}
 	}
 	if (!is_working_dir)
 	{
@@ -111,10 +119,10 @@ pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], b
 }
 
 /* returns true if could extract directory path, and false otherwise */
-bool Utils::get_directory_and_cmd_line_args(int argc, char *argv[], string& dir_path)
+bool Utils::get_directory_and_cmd_line_args(int argc, char *argv[], string& dir_path, int& numOfThreads)
 {
 	bool is_working_dir = false;
-	pair<bool, string> parser_ret_val = parse_command_line_arguments(argc, argv, is_working_dir);
+	pair<bool, string> parser_ret_val = parse_command_line_arguments(argc, argv, is_working_dir, numOfThreads);
 	char cCurrentPath[FILENAME_MAX];
 	if (!_getcwd(cCurrentPath, sizeof(cCurrentPath)))
 	{
@@ -157,6 +165,7 @@ bool Utils::find_all_board_files(const string& dir_path, vector<BoardFullData>& 
 	if (!board_found)
 	{
 		cout << "No board files (*.sboard) looking in path: " << dir_path << endl; //ReqPrnt
+		LOGGER.log("No board files (*.sboard) looking in path: "s + string(dir_path));
 		string dummy_str;
 		/* even if dll is missing for both players an error message will be printed only once, intentionally*/
 	}
@@ -174,7 +183,8 @@ bool Utils::load_dll (string dir_path, DLLData& dll_data)
 	HINSTANCE hDll = LoadLibraryA(full_path); // Notice: Unicode compatible version of LoadLibrary
 	if (!hDll)
 	{
-		std::cout << "Cannot load dll: " << full_path << std::endl;
+		LOGGER.log("ERROR: Cannot load dll: "s + string(full_path) + " this file will be skipped");
+		return false;
 	}
 
 	/* create A instance*/
@@ -184,7 +194,7 @@ bool Utils::load_dll (string dir_path, DLLData& dll_data)
 	dll_data.algo_func = reinterpret_cast<GetAlgoFunc>(GetProcAddress(hDll, "GetAlgorithm"));
 	if (!dll_data.algo_func)
 	{
-		std::cout << "Cannot load dll: " << full_path << std::endl;		
+		LOGGER.log("ERROR: Cannot load dll: "s + string(full_path) + " this file will be skipped");
 	}
 	else
 	{
@@ -206,6 +216,7 @@ bool Utils::get_dlls (string dir_path, vector<DLLData>& players)
 	if (!file_found or players.size() <= 1)
 	{
 		cout << "Missing algorithm (dll) files looking in path: " << path << " (needs at least two)" << endl;
+		LOGGER.log("Missing algorithm(dll) files looking in path : "s + path + " (needs at least two)"s);
 		return false;
 	}
 	return true;
@@ -215,9 +226,8 @@ bool Utils::get_dlls (string dir_path, vector<DLLData>& players)
 void Utils::find_all_dll_files(const string& path_expr_to_find,bool& file_found, vector<DLLData>& players, string dir_path)
 {
 	WIN32_FIND_DATAA fileData;
-	HANDLE hFind;
 	string retVal = "";
-	hFind = FindFirstFileA(path_expr_to_find.c_str(), &fileData);
+	HANDLE hFind = FindFirstFileA(path_expr_to_find.c_str(), &fileData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
 		if (GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -327,5 +337,32 @@ void Utils::ShowConsoleCursor(bool showFlag)
 bool Utils::doesCoordsEqual(Coordinate c1, Coordinate c2)
 {
 	return c1.row == c2.row and c1.col == c2.col and c1.depth == c2.depth;
+}
+
+
+bool Utils::ParseConfigFile(int& number_of_threads)
+{
+	const char* path = "config.xml";
+	std::ifstream infile(path);
+	std::string line;
+	std::regex number_regex("[0-9]+");
+	std::smatch number_match;
+	if (infile.is_open())
+	{
+		// read dimenstions
+		while (safeGetline(infile, line))
+		{
+			if (line.find("<threads>"s) != std::string::npos)
+			{
+				if (std::regex_search(line, number_match, number_regex))
+				{
+					number_of_threads = std::stoi(number_match[0]);
+					return true;
+				}
+
+			}
+		}
+	}
+	return false;
 }
 
