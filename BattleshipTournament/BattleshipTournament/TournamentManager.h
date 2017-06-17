@@ -1,6 +1,7 @@
 #pragma once
 #include "BoardClass.h"
 #include <mutex>
+#include <queue>
 #include "ScoreBoard.h"
 #include "ThreadPool.h"
 
@@ -38,6 +39,7 @@ public:
     void runTournament();
     void runNextRound(vector<gameEntry>& roundGames);
     bool tournamentOver() const;
+    void displayScores_tournamentEnd();
     void runGame(gameEntry ge);
     const DLLData& getAlgo(int inx) const;
     const BoardFullData& getBoard(int inx) const;

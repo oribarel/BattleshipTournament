@@ -148,8 +148,11 @@ bool Board::SetBoardFromFile(const char* path)
 			}
 		}
 		infile.close();
+		if (!is_valid)
+			LOGGER.log("Error while parsing board file: "s + string(path) + " format is invalid. The file will be skipped"s);
 		return is_valid;
 	}
+	LOGGER.log("Error while open board file: "s + string(path) + " . The file will be skipped");
 	DEBUG("SetBoardFromFile: Unable to open file");
 	return false;
 }
@@ -427,7 +430,6 @@ bool BoardFullData::initialize_board(string file_board)
 	set_boards_sucess = this->brd.SetBoardFromFile((file_board).c_str());
 	if (!set_boards_sucess)
 	{
-		std::cout << "Error while open board file" << std::endl;
 		return false;
 	}
 
@@ -439,7 +441,10 @@ bool BoardFullData::initialize_board(string file_board)
 	// check board validity
 	bool balanced_board = true;
 	if (!this->isValidBoard(balanced_board))
+	{
+		LOGGER.log("Error: board "s + file_board + " is invalid and will be skipped"s);
 		return false;
+	}
 	if (!balanced_board)
 		LOGGER.log("WARNING: board " + file_board + " is imbalanced");
 	DEBUG("*** board is valid ***");
@@ -511,10 +516,10 @@ bool BoardFullData::validate_ships_shape(int player_id) const
 			if (it->getType() == ship_types[i] && !it->getValid())
 			{
 				//Requirement print
-				if (player_id == Board::PLAYER_A)
-					cout << "Wrong size or shape for ship " << static_cast<char> (ship_types_A[i]) << " for player A" << endl;
-				else
-					cout << "Wrong size or shape for ship " << static_cast<char> (ship_types_B[i]) << " for player B" << endl;
+				//if (player_id == Board::PLAYER_A)
+				//	cout << "Wrong size or shape for ship " << static_cast<char> (ship_types_A[i]) << " for player A" << endl;
+				//else
+				//	cout << "Wrong size or shape for ship " << static_cast<char> (ship_types_B[i]) << " for player B" << endl;
 				is_valid = false;
 				break;
 			}
@@ -535,7 +540,7 @@ bool BoardFullData::validate_no_adjacent_ships() const
 			if (all_ships[i].isAdjacentShips(all_ships[j]))
 			{
 				//Requirement print
-				cout << "Adjacent Ships on Board" << endl;
+				//cout << "Adjacent Ships on Board" << endl;
 				return false;
 			}
 		}

@@ -466,7 +466,9 @@ void GameManager::mainLoop()
 		do
 		{
 			auto attack = currPlayer.algo->attack();
+#ifdef DEBUG_BUILD
 			LOGGER.log("player "s + std::to_string(currPlayerInx) + " attack is "s  + std::to_string(attack.row) + ", "s + std::to_string(attack.col) + ", "s + std::to_string(attack.depth));
+#endif
 			DEBUG("Points:");
 			DEBUG("Player A: " << players[PLAYER_A].score);
 			DEBUG("Player B: " << players[PLAYER_B].score);

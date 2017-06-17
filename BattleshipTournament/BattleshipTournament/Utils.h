@@ -86,8 +86,9 @@ class Utils
 		static bool Utils::load_dll(string dir_path, DLLData& dll_data);
 		static bool Utils::get_dlls(string dir_path, vector<DLLData>& players);
 		static void Utils::find_all_dll_files(const string& path_expr_to_find, bool& file_found, vector<DLLData>& players, string dir_path);
-		static bool Utils::get_directory_and_cmd_line_args(int argc, char *argv[], string& dir_path);
-		static pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir);
+		static bool Utils::get_directory_and_cmd_line_args(int argc, char *argv[], string& dir_path, int& numOfThreads);
+		static pair<bool, string> Utils::parse_command_line_arguments(int argc, char *argv[], bool& is_working_dir, int& num_of_threads);
+		static bool Utils::ParseConfigFile(int& number_of_threads);
 		static const int DEFAULT_PRINT_DELAY = 2000;
 		static const int DEFAULT_START_ANIMATION_DELAY = 350;
 		static const int DEFAULT_END_ANIMATION_DELAY = 500;
@@ -100,6 +101,7 @@ class Utils
 		static const int PLAYER_A = 0;
 		static const int PLAYER_B = 1;
 		static const int NUMBER_OF_SHIP_TYPES = 4;
+		static const int DEFAULT_NUMBER_OF_THREADS = 4;
 		//static const string  FILE_NOT_FOUND;
 
 	private:
